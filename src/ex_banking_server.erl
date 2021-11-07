@@ -68,9 +68,9 @@ handle_call({withdraw,{Uid,Amount}},_From,State)->
                 {noreply,State};
         _ -> {reply,user_does_not_exist,State}
     end;
-handle_call({send,{Uid,Amount}},_From,State)->
-    case ex_banking_account_server:user_exists(Uid) of 
-        true -> Result=ex_banking_account_server:withdraw(Uid,Amount),
+handle_call({send,{From_Uid,To_Uid,Amount}},_From,State)->
+    case begin ex_banking_account_server:user_exists(From_Uid),ex_banking_account_server:user_exists(To_Uid) end of 
+        true -> Result=ex_banking_account_server:send(From_Uid, To_Uid, Amount),
                 gen_server:reply(_From, Result),
                 {noreply,State};
         _ -> {reply,user_does_not_exist,State}

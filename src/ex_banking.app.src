@@ -2,13 +2,19 @@
  [{description, "An OTP application"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, {ex_banking_app, []}},
+  {mod, {ex_banking, []}},
   {applications,
    [kernel,
     stdlib
    ]},
   {env,[]},
-  {modules, []},
+  {modules, [ex_banking,
+             ex_banking_sup,
+             ex_banking_server,
+             ex_banking_account_server,
+             ex_banking_account_sup,
+             ex_banking_account_worker,
+             ]},
 
   {licenses, ["Apache 2.0"]},
   {links, []}
