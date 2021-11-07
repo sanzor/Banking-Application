@@ -35,10 +35,8 @@ get_balance(Pid,ReplyTo)->
 %%% 
 handle_cast(_Message,State)->
     {noreply,State}.
-handle_info(ReplyTo,State)->
-    gen_server:reply(ReplyTo,ok),
+handle_info(_Message,State)->
     {noreply,State}.
-
 
 handle_call({get_balance,ReplyTo},_From,State)->
     Balance=State#state.balance,
