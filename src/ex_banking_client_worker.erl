@@ -40,11 +40,10 @@ send(From_User,To_User,Amount)->
 
 handle_call({create_user,User},_From,State) ->
     Reply=case ex_banking_account_map:get_user(User) of
-        error -> user_already_exists
-        {ok,U}->{ok,Pid}=ex_banking_account_sup:create_account_worker(User, From),
-                 Ref=erlang:monitor(process, Pid), 
-                
-    Reply=ex_banking_account_server:create_user(User),
+        error -> user_already_exists;
+        {ok,U}-> {ok,Pid}=ex_banking_account_sup:create_account_worker(User, From),
+                 Ref=erlang:monitor(process, Pid),
+                 Reply=ex_banking_account_map:create_user(User, Ref, Pid),
     {reply,Reply,State,?TIMEOUT};
 
 
