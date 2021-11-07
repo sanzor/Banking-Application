@@ -2,13 +2,13 @@
 -behaviour(supervisor).
 
 -define(NAME,?MODULE).
--export([init/1,start_link/0,create_account_worker/2]).
+-export([init/1,start_link/0,create_account_worker/1]).
 
 start_link()->
     supervisor:start_link({local,?NAME}, []).
 
-create_account_worker(User,ReplyTo)->
-    supervisor:start_child(?NAME,[{User,ReplyTo}]).
+create_account_worker(User)->
+    supervisor:start_child(?NAME,[User]).
 init(_Args)->
     Strategy={simple_one_for_one,0,1},
     Flags=[#{
