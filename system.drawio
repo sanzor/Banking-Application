@@ -1,0 +1,34 @@
+<mxfile host="65bd71144e">
+    <diagram id="fLNprXVYYqRdR4dScNe5" name="Page-1">
+        <mxGraphModel dx="1060" dy="1594" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="App" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="140" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Sup" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="140" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="WorkerSup" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="510" y="-30" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="Server" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="510" y="220" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="Worker" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="-10" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Worker" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="660" y="40" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="Worker" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="660" y="-60" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="TrafficServer" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="510" y="140" width="120" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

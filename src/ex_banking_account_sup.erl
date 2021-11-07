@@ -1,0 +1,24 @@
+-module(ex_banking_main_sup).
+-behaviour(supervisor).
+
+-define(NAME,?MODULE).
+-export([init/1,start_link/0,create_account_worker/1]).
+
+start_link()->
+    supervisor:start_link({local,?NAME}, []).
+
+create_account_worker(User)->
+    supervisor:start_child(?NAME,[User]).
+init(_Args)->
+    Strategy={simple_one_for_one,0,1},
+    Flags=[#{
+        id=>ex_banking_account_worker,
+        start=>{ex_banking_account_worker,start_link,[]},
+        restart=>transient,
+        shutdown=>3000,
+        mod=>[ex_banking_account_worker],
+        type=>worker
+    }],
+    {ok,{Strategy,Flags}}.
+
+
