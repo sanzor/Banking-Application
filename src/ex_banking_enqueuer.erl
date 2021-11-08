@@ -22,40 +22,42 @@ init(Args)->
     {ok,#state{queue=queue:new()}}.
 
 
-
+publish_result(Result)->
+    gen_server:cast(?NAME, Result).
 create_user(User)->
-    gen_server:cast(?NAME,{self(),{create_user,User}}).
+    gen_server:call(?NAME,{self(),{create_user,User}}).
 
 deposit(User,Amount)->
-    gen_server:cast(?NAME, {self(),{deposit,{User,Amount}}}).
+    gen_server:call(?NAME, {self(),{deposit,{User,Amount}}}).
 
 withdraw(User,Amount)->
-    gen_server:cast(?NAME, {self(),{withdraw,{User,Amount}}}).
+    gen_server:call(?NAME, {self(),{withdraw,{User,Amount}}}).
 
 get_balance(User)->
-    gen_server:cast(?NAME, {self(),{get_balance,User}}).
+    gen_server:call(?NAME, {self(),{get_balance,User}}).
 send(From_User,To_User,Amount)->
-    gen_server:cast(?NAME, {self(),{send,From_User,To_User,Amount}}).
+    gen_server:call(?NAME, {self(),{send,From_User,To_User,Amount}}).
 
 consume()->
     gen_server:call(?NAME, consume_message).
 %%%% Handlers
-
 handle_info(timeout,State)->
     {stop,State}.
-handle_cast({From,{create_user,User}},State) ->
+handle_cast(Request,State)->
+    {stop,State}.
+handle_call({create_user,User},From,State) ->
     {noreply,State#state{queue=queue:in({From,{create_user,User}}, State#state.queue)}};
 
-handle_cast({_From,{get_balance,Uid}},State)->
+handle_call({get_balance,Uid},_From,State)->
     {noreply,State#state{queue=queue:in({_From,{get_balance,Uid}}, State#state.queue)}};
  
-handle_cast({_From,{deposit,{Uid,Amount}}},State) ->
+handle_call({deposit,{Uid,Amount}},_From,State) ->
     {noreply,State#state{queue=queue:in({_From,{deposit,{Uid,Amount}}}, State#state.queue)}};
 
-handle_cast({_From,{withdraw,{Uid,Amount}}},State)->
+handle_call({withdraw,{Uid,Amount}},_From,State)->
     {noreply,State#state{queue=queue:in({_From,{withdraw,{Uid,Amount}}}, State#state.queue)}};
-handle_cast({_From,{send,{From_Uid,To_Uid,Amount}}},State)->
-    {noreply,State#state{queue=queue:in({_From,{send,{From_Uid,To_Uid,Amount}}}, State#state.queue)}}.
+handle_call({send,{From_Uid,To_Uid,Amount}},_From,State)->
+    {noreply,State#state{queue=queue:in({_From,{send,{From_Uid,To_Uid,Amount}}}, State#state.queue)}};
 
 handle_call(consume,_From,State)->
     case queue:out(State#state.queue) of

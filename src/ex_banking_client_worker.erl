@@ -41,7 +41,7 @@ send({Pid,ReplyTo},{From_User,To_User,Amount})->
 %%% 
 handle_info(timeout,State)->
     {stop,State}.
-handle_call({ReplyTo,{create_user,User}},State) ->
+handle_cast({ReplyTo,{create_user,User}},State) ->
     case ex_banking_account_map:get_user(User) of
         user_already_exists -> {reply,user_already_exists,State};
         {ok,_U}-> {ok,Pid}=ex_banking_account_sup:create_account_worker(User),
@@ -52,7 +52,7 @@ handle_call({ReplyTo,{create_user,User}},State) ->
     end;
 
 
-handle_call({ReplyTo,{get_balance,Uid}},State)->
+handle_cast({ReplyTo,{get_balance,Uid}},State)->
     case ex_banking_account_map:get_user(Uid) of
         {ok,User}-> Reply=ex_banking_account_worker:get_balance(User#user.pid),
                     gen_server:reply(ReplyTo, Reply),
@@ -62,18 +62,18 @@ handle_call({ReplyTo,{get_balance,Uid}},State)->
     end;
  
 
-handle_call({deposit,{Uid,Amount}},_From,State) ->
+handle_cast({ReplyTo,{deposit,{Uid,Amount}}},State) ->
     case ex_banking_account_map:get_user(Uid) of 
         {ok,User} -> {reply,ex_banking_account_worker:deposit(User#user.pid,Amount),State};
          user_does_not_exist -> {reply,user_does_not_exist,State}
     end;
 
-handle_call({withdraw,{Uid,Amount}},_From,State)->
+handle_cast({ReplyTo,{withdraw,{Uid,Amount}}},State)->
     case ex_banking_account_map:get_user(Uid) of 
         {ok,User} ->{reply,ex_banking_account_worker:withdraw(User#user.pid,Amount),State};
         user_does_not_exist -> {reply,user_does_not_exist,State}
     end;
-handle_call({send,{From_Uid,To_Uid,Amount}},_From,State)->
+handle_cast({ReplyTo,{send,{From_Uid,To_Uid,Amount}}},State)->
     case begin F_U=ex_banking_account_worker:get_user(From_Uid),
                T_U=ex_banking_account_worker:get_user(To_Uid),
                {F_U,T_U} 
