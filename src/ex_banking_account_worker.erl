@@ -15,8 +15,7 @@
 start_link(UserId)->
     gen_server:start_link(?NAME,[UserId], []).
 
-init([{UserId,ReplyTo}])->
-    self() ! {replyto,ReplyTo},
+init([UserId])->
     {ok,#state{id=UserId,balance=0}}.
 
 deposit(Pid,Amount)->

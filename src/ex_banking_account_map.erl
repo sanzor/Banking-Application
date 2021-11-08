@@ -30,7 +30,7 @@ get_user(User)->
 init(_Args)->
     {ok,#state{accounts=dict:new()}}.
 
-handle_cast(Message,State)->
+handle_cast(_Message,State)->
     {noreply,State}.
 handle_call({get_user,User},From,State)->
     gen_server:reply(From, dict:find(User, State#state.accounts)),
@@ -42,16 +42,8 @@ handle_call({create_user,{User,Pid,Ref}},_From,State)->
                 false ->NewDict=dict:store(User,#user{pid=Pid,ref=Ref},State#state.accounts),
                         {reply,ok,State#state{accounts=NewDict}}
     end,
-    {reply,Reply,State};
-handle_call({send,From_Uid,To_Uid,Amount},_From,State)->
-        {ok,From_User}=dict:find(From_Uid, State#state.accounts),
-        {ok,To_User}=dict:find(To_Uid, State#state.accounts),
-        case ex_banking_account_worker:withdraw(From_User#user.pid, Amount) of
-            not_enough_money->{reply,not_enough_money,State};
-            {ok,NewFromBalance}-> {ok,NewToBalance}=ex_banking_account_worker:deposit(To_User#user.pid, Amount),
-                                  {reply,NewFromBalance,NewToBalance}
-        end.
-                                    
+    {reply,Reply,State}.
+                     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
