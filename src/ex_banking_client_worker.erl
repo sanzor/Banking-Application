@@ -71,7 +71,7 @@ handle_call({withdraw,{Uid,Amount}},_From,State)->
     end;
 handle_call({send,{From_Uid,To_Uid,Amount}},_From,State)->
     case begin F_U=ex_banking_account_worker:get_user(From_Uid),
-               T_U=ex_banking_account_worker:user_exists(To_Uid),
+               T_U=ex_banking_account_worker:get_user(To_Uid),
                {F_U,T_U} 
           end of 
         {user_does_not_exist,_} -> {reply,user_does_not_exist,State};
