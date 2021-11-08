@@ -30,6 +30,8 @@ get_user(User)->
 init(_Args)->
     {ok,#state{accounts=dict:new()}}.
 
+handle_cast(Message,State)->
+    {noreply,State}.
 handle_call({get_user,User},From,State)->
     gen_server:reply(From, dict:find(User, State#state.accounts)),
     {noreply,State};

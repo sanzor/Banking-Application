@@ -5,7 +5,10 @@
 
 -export([create_user/1,get_balance/1,deposit/2,withdraw/2,send/3]).
 
-
+-record(user,{
+    ref,
+    pid
+}).
 -record(state,{
     users=[]
 }).
@@ -39,41 +42,49 @@ send(From_User,To_User,Amount)->
     
 
 handle_call({create_user,User},_From,State) ->
-    Reply=case ex_banking_account_map:get_user(User) of
-        error -> user_already_exists;
-        {ok,U}-> {ok,Pid}=ex_banking_account_sup:create_account_worker(User, From),
-                 Ref=erlang:monitor(process, Pid),
-                 Reply=ex_banking_account_map:create_user(User, Ref, Pid),
-    {reply,Reply,State,?TIMEOUT};
+    case ex_banking_account_map:get_user(User) of
+        user_already_exists -> {reply,user_already_exists,State};
+        {ok,_U}-> {ok,Pid}=ex_banking_account_sup:create_account_worker(User, _From),
+                   Ref=erlang:monitor(process, Pid),
+                   Reply=ex_banking_account_map:create_user(User, Ref, Pid),
+                  {reply,Reply,State}
+    end;
 
 
 handle_call({get_balance,Uid},_From,State)->
-    Reply=ex_banking_account_server:get_balance(Uid),
-    {reply,Reply,State,?TIMEOUT};      
+    case ex_banking_account_map:get_user(Uid) of
+        {ok,User}->{reply,ex_banking_account_worker:get_balance(User#user.pid),State};
+        user_does_not_exist->{reply,user_does_not_exist,State}
+    end;
+ 
 
 handle_call({deposit,{Uid,Amount}},_From,State) ->
-    case ex_banking_account_server:user_exists(Uid) of 
-        true -> Result=ex_banking_account_server:deposit(Uid,Amount),
-                gen_server:reply(_From, Result),
-                {noreply,State,?TIMEOUT};
-        _ -> {reply,user_does_not_exist,State,?TIMEOUT}
+    case ex_banking_account_map:get_user(Uid) of 
+        {ok,User} -> {reply,ex_banking_account_worker:deposit(User#user.pid,Amount),State};
+         user_does_not_exist -> {reply,user_does_not_exist,State}
     end;
 
 handle_call({withdraw,{Uid,Amount}},_From,State)->
-    case ex_banking_account_server:user_exists(Uid) of 
-        true -> Result=ex_banking_account_server:withdraw(Uid,Amount),
-                gen_server:reply(_From, Result),
-                {noreply,State};
-        _ -> {reply,user_does_not_exist,State,?TIMEOUT}
+    case ex_banking_account_map:get_user(Uid) of 
+        {ok,User} ->{reply,ex_banking_account_worker:withdraw(User#user.pid,Amount),State};
+        user_does_not_exist -> {reply,user_does_not_exist,State}
     end;
 handle_call({send,{From_Uid,To_Uid,Amount}},_From,State)->
-    case begin ex_banking_account_server:user_exists(From_Uid),ex_banking_account_server:user_exists(To_Uid) end of 
-        true -> Result=ex_banking_account_server:send(From_Uid, To_Uid, Amount),
-                gen_server:reply(_From, Result),
-                {noreply,State,?TIMEOUT};
-        _ -> {reply,user_does_not_exist,State,?TIMEOUT}
+    case begin F_U=ex_banking_account_worker:get_user(From_Uid),
+               T_U=ex_banking_account_worker:user_exists(To_Uid),
+               {F_U,T_U} 
+          end of 
+        {user_does_not_exist,_} -> {reply,user_does_not_exist,State};
+        {_,user_does_not_exist} -> {reply,user_does_not_exist,State};
+        {{ok,From_User},{ok,To_User}}-> {reply,handle_send(From_User#user.pid, To_User#user.pid, Amount),State}
     end.
 
+handle_send(From_User_Pid,To_User_Pid,Amount)->
+    WithdrawResult=ex_banking_account_worker:withdraw(From_User_Pid, Amount),
+    handle_withdraw(WithdrawResult,To_User_Pid,Amount).
+handle_withdraw(not_enough_money,_,_)->not_enough_money;
+handle_withdraw({ok,_},To_Pid,Amount)->
+    ex_banking_account_worker:deposit(To_Pid, Amount).
 handle_info(timeout,State)->
     {stop,State}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
