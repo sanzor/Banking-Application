@@ -23,7 +23,7 @@ init(Args)->
     {ok,#state{currencies=dict:new()}}.
 
 
--spec get_currency(Currency)->{ok,{Currency, Coefficient::number()}} | currency_not_found |  {error , invalid_arguments} 
+-spec get_currency(Currency)->{ok,{Currency, Coefficient::number()}} | currency_not_found |  {error , wrong_arguments} 
                                     when Currency:: list() | atom().
 get_currency(Currency) when not is_list(Currency) , not is_atom(Currency)->
     {error,invalid_arguments};
@@ -33,7 +33,7 @@ get_currency(Currency)->
 
 
 -spec add_currency(Currency, Coefficient::number())->{ok,{added,Currency}} | 
-                                                      currency_already_exists |{error , invalid_arguments}
+                                                      currency_already_exists |{error , wrong_arguments}
                                                       when Currency :: list() | atom() .
 add_currency(Currency,Coefficient) when not is_number(Coefficient) ;not Coefficient>0; not is_list(Currency) ->
     {error,invalid_arguments};
@@ -43,7 +43,7 @@ add_currency(Currency,Coefficient)->
 
 
 
--spec remove_currency(Currency)->{ok,{removed,Currency}}  | {error , invalid_arguments}
+-spec remove_currency(Currency)->{ok,{removed,Currency}}  | {error , wrong_arguments}
                                     when Currency:: list() | atom().
 remove_currency(Currency) when not is_atom(Currency) ; not is_list(Currency) ->
     {error,invalid_arguments};
@@ -54,10 +54,10 @@ remove_currency(Currency)->
 
 
 -spec update_currency(Currency, Coefficient::number())->{ok,{updated,Currency}} |
-                                                         currency_does_not_exist | {error , invalid_arguments}
+                                                         currency_does_not_exist | {error , wrong_arguments}
                                                          when Currency:: list() | atom().
 update_currency(Currency,Coefficient) when not is_number(Coefficient) ; not Coefficient>0 ; not is_list(Currency) , not is_atom(Currency) ->
-    {error,invalid_arguments};
+    {error,wrong_arguments};
 
 update_currency(Currency,Coefficient)->
     gen_server:call(?NAME, {update_currency,Currency,Coefficient}).
