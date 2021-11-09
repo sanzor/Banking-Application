@@ -17,19 +17,39 @@ init(_)->
     {ok,#state{}}.
 create_user(Pid,User)->
     gen_server:call(Pid,{create_user,User}).
-get_balance(Pid,User)->
-    gen_server:call(Pid,{get_balance,User}).
+get_balance(Pid,{User,Currency})->
+    case ex_banking_currency_server:get_currency(Currency) of
+        {ok,Coefficient}->case gen_server:call(Pid,{get_balance,User}) of  
+                            {ok,NewBalance}->{ok,NewBalance/Coefficient};
+                             Err->Err
+                          end;
+        Error -> Error
+    end.
 deposit(Pid,{User,Amount,Currency})->
     case ex_banking_currency_server:get_currency(Currency) of
-        {ok,Coefficient}->gen_server:call(Pid,{deposit,User,Amount*Coefficient,Currency});
+        {ok,Coefficient}->case gen_server:call(Pid,{deposit,User,Amount*Coefficient,Currency}) of  
+                            {ok,NewBalance}->{ok,NewBalance/Coefficient};
+                             Err->Err
+                          end;
         Error -> Error
     end.
     
 withdraw(Pid,{User,Amount,Currency})->
-    {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
-    gen_server:call(Pid,{withdraw,User,Amount*Coefficient,Currency}).
+    case ex_banking_currency_server:get_currency(Currency) of
+        {ok,Coefficient}->case gen_server:call(Pid,{withdraw,User,Amount*Coefficient,Currency}) of  
+                            {ok,NewBalance}->{ok,NewBalance/Coefficient};
+                             Err->Err
+                          end;
+        Error -> Error
+    end.
 send(Pid,{From_User,To_User,Amount,Currency})->
-    gen_server:call(Pid,{send,From_User,To_User,Amount,Currency}).
+    case ex_banking_currency_server:get_currency(Currency) of
+        {ok,Coefficient}->case gen_server:call(Pid,{send,From_User,To_User,Amount*Coefficient}) of  
+                            {ok,From_User_Balance,To_User_Balance}->{ok,From_User_Balance/Coefficient,To_User_Balance/Coefficient};
+                             Err->Err
+                          end;
+        Error -> Error
+    end.
 
 
 send_result(Pid,Message)->
