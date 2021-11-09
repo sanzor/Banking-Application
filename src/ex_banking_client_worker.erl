@@ -3,7 +3,7 @@
 
 -export([start_link/0,init/1,handle_call/3,handle_info/2]).
 
--export([create_user/2,get_balance/2,deposit/2,withdraw/2,send/2]).
+-export([create_user/2,get_balance/2,deposit/2,withdraw/2,send/2,handle_bank_request/2]).
 
 -record(user,{
     ref,
@@ -23,6 +23,15 @@ start_link()->
 init(Args)->
     {ok,#state{users=dict:new()}}.
 %%%% Handlers
+handle_bank_request(To,Message)->
+    {_,InnerMessage}=Message,
+    case InnerMessage of 
+        {create_user,_}->ex_banking_client_worker:create_user(To,Message);
+        {get_balance,_}->ex_banking_client_worker:get_balance(To,Message);
+        {deposit,_,_}->ex_banking_client_worker:deposit(To,Message);
+        {withdraw,_,_}->ex_banking_client_worker:withdraw(To,Message);
+        {send,_,_,_}->ex_banking_client_worker:send(To,Message)
+    end.
 
 create_user({Pid,ReplyTo},User)->
     gen_server:cast(Pid,{ReplyTo,{create_user,User}},?CALL_TIMEOUT).
@@ -42,14 +51,15 @@ send({Pid,ReplyTo},{From_User,To_User,Amount})->
 handle_info(timeout,State)->
     {stop,State}.
 handle_cast({ReplyTo,{create_user,User}},State) ->
-    case ex_banking_account_map:get_user(User) of
+    Reply=case ex_banking_account_map:get_user(User) of
         user_already_exists -> {reply,user_already_exists,State};
         {ok,_U}-> {ok,Pid}=ex_banking_account_sup:create_account_worker(User),
                    Ref=erlang:monitor(process, Pid),
                    Reply=ex_banking_account_map:create_user(User, Ref, Pid),
                    gen_server:reply(ReplyTo, Reply),
                    {noreply,State}
-    end;
+    end,
+    {noreply,State};
 
 
 handle_cast({ReplyTo,{get_balance,Uid}},State)->
