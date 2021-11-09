@@ -106,8 +106,8 @@
                 <mxCell id="32" value="Client Pool" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
                     <mxGeometry x="570" width="100" height="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="33" value="send_result" style="text;html=1;strokeColor=#0000CC;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-                    <mxGeometry x="410" y="-70" width="40" height="20" as="geometry"/>
+                <mxCell id="33" value="send_result ( contains App Pid)" style="text;html=1;strokeColor=#0000CC;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="330" y="-60" width="200" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="34" value="consume" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
                     <mxGeometry x="290" y="55" width="40" height="20" as="geometry"/>
