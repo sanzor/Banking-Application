@@ -148,8 +148,8 @@
                         <mxPoint x="170" y="-150" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="49" value="CALL" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-                    <mxGeometry x="190" y="-160" width="40" height="20" as="geometry"/>
+                <mxCell id="49" value="CALL (blocks caller)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="180" y="-160" width="130" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="50" value="" style="endArrow=classic;html=1;shadow=1;strokeColor=#00FF00;fillColor=#FF0000;" edge="1" parent="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -169,8 +169,8 @@
                 <mxCell id="53" value="REPLY" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
                     <mxGeometry x="190" y="-100" width="40" height="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="54" value="7. send_result (contains app_server PID)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;shadow=1;" vertex="1" parent="1">
-                    <mxGeometry x="330" y="-60" width="230" height="20" as="geometry"/>
+                <mxCell id="54" value="7. send_result (contains app_server PID necessary at next step)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;shadow=1;" vertex="1" parent="1">
+                    <mxGeometry x="245" y="-60" width="380" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="55" value="6.Interacts" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;shadow=1;" vertex="1" parent="1">
                     <mxGeometry x="760" width="40" height="20" as="geometry"/>
