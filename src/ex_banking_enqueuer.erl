@@ -38,7 +38,7 @@ init(_)->
 handle_info(timeout,State)->
     {stop,State}.
 handle_cast({send_result,{To,Message}},State)->
-    gen_server:reply(To,Message),
+    ex_banking_server:send_result(To, Message),
     {noreply,State}.
 handle_call({process_message,Message},_From,State)->
     {noreply,State#state{queue=queue:in({_From,Message}, State#state.queue)}};

@@ -1,7 +1,7 @@
 -module(ex_banking_server).
 -behaviour(gen_server).
 -export([create_user/1,get_balance/1,deposit/3,withdraw/3,send/4]).
--export([handle_call/3,handle_cast/2,init/1,start_link/0]).
+-export([handle_call/3,handle_cast/2,init/1,start_link/0,send_result/2]).
 
 -define(NAME,?MODULE).
 -record(state,{
@@ -26,6 +26,8 @@ withdraw(User,Amount,Currency)->
 send(From_User,To_User,Amount,Currency)->
     gen_server:call(?NAME,{send,From_User,To_User,Amount,Currency}).
 
+send_result(Pid,Message)->
+    gen_server:reply(Pid,Message).
 
 %%%%%%%%%%%%%%%%%%%% Handlers %%%%%%%%%%%%
 handle_cast(_Request,State)->{noreply,State}.
