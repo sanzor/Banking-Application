@@ -14,6 +14,7 @@ Application features:
 - multiple accounts can be serviced concurrently
 - a number of MAX operations can be done at any given time over a target account
 
+[Architecture](system.png)
 
 Build
 -----
