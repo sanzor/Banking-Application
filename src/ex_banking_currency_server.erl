@@ -32,7 +32,7 @@ get_currency(Currency)->
 
 
 -spec add_currency(Currency:: list() | atom() , Coefficient::number())->{ok,{added,Currency::list() | atom()}} | currency_already_exists |{error , invalid_arguments}.
-add_currency(Currency,Coefficient) when not is_number(Coefficient) ; not is_list(Currency) ->
+add_currency(Currency,Coefficient) when not is_number(Coefficient) ;not Coefficient>0; not is_list(Currency) ->
     {error,invalid_arguments};
 
 add_currency(Currency,Coefficient)->
@@ -50,7 +50,7 @@ remove_currency(Currency)->
 
 
 -spec update_currency(Currency:: list() | atom() , Coefficient::number())->{ok,{updated,Currency::list() | atom()}} | currency_does_not_exist |{error , invalid_arguments}.
-update_currency(Currency,Coefficient) when not is_number(Coefficient) ; not is_list(Currency) , not is_atom(Currency) ->
+update_currency(Currency,Coefficient) when not is_number(Coefficient) ; not Coefficient>0 ; not is_list(Currency) , not is_atom(Currency) ->
     {error,invalid_arguments};
 
 update_currency(Currency,Coefficient)->
