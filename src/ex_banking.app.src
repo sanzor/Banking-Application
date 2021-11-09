@@ -7,7 +7,15 @@
    [kernel,
     stdlib
    ]},
-  {env,[]},
+  {env,[{currency_map,
+            {selected_currency,eur},
+            {coefficients,[{usd,0.90},
+                           {chf,0.85},
+                           {ron,5},
+                           {tky,5.5}]
+         }
+       ]
+  },
   {modules, [ex_banking,
              ex_banking_sup,
              ex_banking_server,
