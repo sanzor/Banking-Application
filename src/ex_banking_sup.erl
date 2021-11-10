@@ -36,16 +36,24 @@ init([]) ->
         restart=>permanent,
         shutdown=>brutal_kill,
         type=>worker,
-        mod=>[ex_banking_currency_server]
+        modules=>[ex_banking_currency_server]
 
-    }
+    },
+    #{
+        id=>ex_banking_traffic_server,
+        start=>{ex_banking_traffic_server,start_link,[]},
+        restart=>permanent,
+        shutdown=>brutal_kill,
+        type=>worker,
+        modules=>[ex_banking_traffic_server]
+    },
     #{
         id=>ex_banking_account_map,
         start=>{ex_banking_account_map,start_link,[]},
         restart=>permanent,
         shutdown=>5000,
         type=>worker,
-        mod=>[ex_banking_account_map]
+        modules=>[ex_banking_account_map]
     },
     #{
         id=>ex_banking_account_worker_sup,
@@ -53,7 +61,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>supervisor,
-        mod=>[ex_banking_account_worker_sup]
+        modules=>[ex_banking_account_worker_sup]
     },
     #{
         id=>ex_banking_processing_worker_sup,
@@ -61,7 +69,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>supervisor,
-        mod=>[ex_banking_processing_worker_sup]
+        modules=>[ex_banking_processing_worker_sup]
     },
     #{
         id=>ex_banking_consumer,
@@ -69,7 +77,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>worker,
-        mod=>[ex_banking_consumer]
+        modules=>[ex_banking_consumer]
     },
     #{
         id=>ex_banking_enqueuer,
@@ -77,7 +85,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>worker,
-        mod=>[ex_banking_enqueuer]
+        modules=>[ex_banking_enqueuer]
     },
     #{
         id=>ex_banking_client_worker_sup,
@@ -85,7 +93,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>brutal_kill,
         type=>supervisor,
-        mod=>[ex_banking_client_worker_sup]
+        modules=>[ex_banking_client_worker_sup]
     }],
     {ok, {SupFlags, ChildSpecs}}.
 

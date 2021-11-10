@@ -1,4 +1,4 @@
--module(ex_banking_main_sup).
+-module(ex_banking_account_worker_sup).
 -behaviour(supervisor).
 
 -define(NAME,?MODULE).

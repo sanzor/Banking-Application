@@ -61,8 +61,7 @@ handle_cast({ReplyTo,{get_balance,Uid}},State)->
 handle_cast({ReplyTo,{deposit,{Uid,Amount}}},State) ->
     Reply=case ex_banking_account_map:get_user(Uid) of
              user_does_not_exist-> user_does_not_exist;
-            {ok,User} -> ex_banking_account_worker:deposit(User#user.pid,Amount)
-            
+            {ok,User} -> ex_banking_account_worker:deposit(User#user.pid,Amount) 
            end,
     ex_banking_enqueuer:send_result(ReplyTo,Reply),
     {noreply,State};
@@ -81,8 +80,8 @@ handle_cast({ReplyTo,{send,{From_Uid,To_Uid,Amount}}},State)->
                      {F_U,T_U} 
                 end 
            of 
-            {user_does_not_exist,_} -> user_does_not_exist;
-            {_,user_does_not_exist} -> user_does_not_exist;
+            {user_does_not_exist,_} -> sender_does_not_exist;
+            {_,user_does_not_exist} -> receiver_does_not_exist;
             {{ok,From_User},{ok,To_User}}-> handle_send(From_User#user.pid, To_User#user.pid, Amount)
     end,
     ex_banking_enqueuer:send_result(ReplyTo,Reply),
@@ -90,8 +89,11 @@ handle_cast({ReplyTo,{send,{From_Uid,To_Uid,Amount}}},State)->
 
 handle_send(From_User_Pid,To_User_Pid,Amount)->
     WithdrawResult=ex_banking_account_worker:withdraw(From_User_Pid, Amount),
-    handle_withdraw(WithdrawResult,To_User_Pid,Amount).
+    handle_withdraw_result(WithdrawResult,To_User_Pid,Amount).
 
-handle_withdraw(not_enough_money,_,_)->not_enough_money;
-handle_withdraw({ok,_},To_Pid,Amount)->
-    ex_banking_account_worker:deposit(To_Pid, Amount).
+handle_withdraw_result(not_enough_money,_,_)->not_enough_money;
+handle_withdraw_result({ok,FromNewBalance},To_Pid,Amount)->
+    case ex_banking_account_worker:deposit(To_Pid, Amount) of
+        {ok,ToNewBalance} -> {ok,FromNewBalance,ToNewBalance};
+         Err ->Err
+    end.

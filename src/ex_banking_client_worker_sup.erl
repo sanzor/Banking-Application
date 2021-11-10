@@ -5,7 +5,7 @@
 -export([init/1,start_link/0,get_pool/0]).
 -define(POOL_SIZE,200).
 start_link()->
-    {ok,Pid}=supervisor:start_link({local,?NAME}, []),
+    {ok,Pid}=supervisor:start_link({local,?NAME},?MODULE, []),
     {ok,pool_created}=create_pool(),
     {ok,Pid}.
 
@@ -18,11 +18,11 @@ create_pool()->
 create_child()->
     {ok,Cpid}=supervisor:start_child(?NAME, []),
     {ok,Cpid}.
-init(_Args)->
+init(_)->
     Strategy={simple_one_for_one,0,1},
     Flags=[#{
         id=>ex_banking_client_worker,
-        start=>{ex_banking_client_worker,start_link,[_Args]},
+        start=>{ex_banking_client_worker,start_link,[]},
         restart=>permanent,
         shutdown=>brutal_kill,
         mod=>[ex_banking_client_worker],

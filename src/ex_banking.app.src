@@ -7,20 +7,13 @@
    [kernel,
     stdlib
    ]},
-  {env,[{currency_map,
-            {selected_currency,eur},
-            {coefficients,[{usd,0.90},
-                           {chf,0.85},
-                           {ron,5},
-                           {tky,5.5}]
-         }
-       ]
-  },
+  {env,[]},
   {modules, [ex_banking,
              ex_banking_sup,
              ex_banking_enqueuer,
              ex_banking_consumer,
              ex_banking_currency_server,
+             ex_banking_traffic_server,
              ex_banking_client_worker,
              ex_banking_client_worker_sup,
              ex_banking_processing_worker,
