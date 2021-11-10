@@ -1,7 +1,7 @@
 -module(ex_banking_processing_worker).
 -behaviour(gen_server).
 
--export([start_link/0,init/1,handle_cast/2,handle_info/2]).
+-export([start_link/0,init/1,handle_cast/2,handle_info/2,handle_call/3]).
 
 -export([handle_bank_request/2]).
 
@@ -22,7 +22,7 @@ start_link()->
     gen_server:start_link({local,?NAME}, ?MODULE, [], []).
 
 
-init(Args)->
+init(_)->
     {ok,#state{}}.
 
 
@@ -35,7 +35,7 @@ handle_bank_request(To,Message)->
 % Handlers
 % ------------------------
 
-
+handle_call(stop,_From,State)->{stop,State}.
 handle_info(timeout,State)->
     {stop,State}.
 handle_cast({ReplyTo,{create_user,User}},State) ->
