@@ -18,7 +18,7 @@
 %----------------------------------------------------------------------------------
 % 
 -spec create_user(User :: string())-> ok | {error, wrong_arguments} | user_already_exists.
-create_user(User) when not is_list(User)->{error,wrong_arguments};
+
 create_user(User)->
     ex_banking_server:create_user(User).
 

@@ -4,8 +4,9 @@
 -export([handle_call/3,handle_cast/2,init/1,start_link/0,send_result/2]).
 
 -define(NAME,?MODULE).
+-define(TIMEOUT,3000).
 -record(state,{
-
+   
 }).
 
 %%%%  Call API %%%%%%%%%%%%%%%%%
@@ -42,9 +43,9 @@ handle_call({get_balance,User,Currency},_From,State)->
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,Balance}=ex_banking_enqueuer:process_message({get_balance,User}),
         ok=ex_banking_traffic_server:remove_user_job(User),
-        {reply,{ok,Balance/Coefficient},State}
+        {reply,{ok,Balance/Coefficient},State,?TIMEOUT}
     catch
-        Err->{reply,Err,State}
+        Err->{reply,Err,State,?TIMEOUT}
     end;
 
 handle_call({deposit,{User,Amount,Currency}},_From,State)->
@@ -53,7 +54,7 @@ handle_call({deposit,{User,Amount,Currency}},_From,State)->
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,NewBalance}=ex_banking_enqueuer:process_message({deposit,{User,Amount*Coefficient}}),
         ok=ex_banking_traffic_server:remove_user_job(User),
-        {reply,{ok,NewBalance/Coefficient},State}
+        {reply,{ok,NewBalance/Coefficient},State,?TIMEOUT}
     catch
         Err->{reply,Err,State}
     end;
@@ -63,9 +64,9 @@ handle_call({withdraw,{User,Amount,Currency}},_From,State)->
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,NewBalance}=ex_banking_enqueuer:process_message({withdraw,{User,Amount*Coefficient}}),
          ok=ex_banking_traffic_server:remove_user_job(User),
-        {reply,{ok,NewBalance/Coefficient},State}
+        {reply,{ok,NewBalance/Coefficient},State,?TIMEOUT}
     catch
-        Err->{reply,Err,State}
+        Err->{reply,Err,State,?TIMEOUT}
     end;
 
 handle_call({send,{From_User,To_User,Amount,Currency}},_From,State)->
@@ -75,9 +76,9 @@ handle_call({send,{From_User,To_User,Amount,Currency}},_From,State)->
         {ok,FromNewBalance,ToNewBalance}=ex_banking_enqueuer:process_message({send,{From_User,To_User,Amount*Coefficient}}),
         ok=ex_banking_traffic_server:remove_user_job(From_User),
         ok=ex_banking_traffic_server:remove_user_job(To_User),
-        {reply,{ok,FromNewBalance/Coefficient,ToNewBalance/Coefficient},State}
+        {reply,{ok,FromNewBalance/Coefficient,ToNewBalance/Coefficient},State,?TIMEOUT}
     catch
-        Err->{reply,Err,State}
+        Err->{reply,Err,State,?TIMEOUT}
     end.
 
 handle_send_traffic(From_User,To_User)->
