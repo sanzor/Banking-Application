@@ -19,9 +19,10 @@ start_link()->
 add_user_job(User)->
     gen_server:call(?NAME,{add_user_job,User}).
 
--spec remove_user_job(User)->{ok,{job_added,User}} | too_many_requests_to_user when User::list()|atom().
+-spec remove_user_job(User::list()|atom())->ok.
 remove_user_job(User)->
-    gen_server:cast(?NAME,{remove_user_job,User}).
+    gen_server:cast(?NAME,{remove_user_job,User}),
+    ok.
 
 %-------------Callbacks----------------
 % 
