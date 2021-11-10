@@ -33,6 +33,9 @@ send_result(Pid,Message)->
 %%%%%%%%%%%%%%%%%%%% Handlers %%%%%%%%%%%%
 handle_cast(_Request,State)->{noreply,State}.
 
+handle_call({create_user,User},_From,State)->
+    ok=ex_banking_enqueuer:process_message({create_user,User}),
+    {reply,ok,State};
 handle_call({get_balance,User,Currency},_From,State)->
     try 
         {ok,_}=ex_banking_traffic_server:add_user_job(User),

@@ -41,9 +41,9 @@ handle_info(timeout,State)->
 handle_cast({ReplyTo,{create_user,User}},State) ->
     Reply=case ex_banking_account_map:get_user(User) of
              user_already_exists -> user_already_exists;
-             {ok,_U}-> {ok,Pid}=ex_banking_account_sup:create_account_worker(User),
-                            Ref=erlang:monitor(process, Pid),
-                            ex_banking_account_map:create_user(User, Ref, Pid)                          
+             {ok,_U}->          {ok,Pid}=ex_banking_account_sup:create_account_worker(User),
+                                Ref=erlang:monitor(process, Pid),
+                                ex_banking_account_map:create_user(User, Ref, Pid)                          
           end,
     ex_banking_enqueuer:send_result(ReplyTo,Reply),
     {noreply,State};

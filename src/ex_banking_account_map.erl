@@ -37,12 +37,12 @@ handle_call({get_user,User},From,State)->
     {noreply,State};
 
 handle_call({create_user,{User,Pid,Ref}},_From,State)->
-    Reply=case dict:is_key(User,State#state.accounts) of
+    case dict:is_key(User,State#state.accounts) of
                 true ->{reply,user_already_exists,State};
                 false ->NewDict=dict:store(User,#user{pid=Pid,ref=Ref},State#state.accounts),
                         {reply,ok,State#state{accounts=NewDict}}
-    end,
-    {reply,Reply,State}.
+    end.
+    
                      
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

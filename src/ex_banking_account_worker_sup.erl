@@ -8,7 +8,8 @@ start_link()->
     supervisor:start_link({local,?NAME}, []).
 
 create_account_worker(User)->
-    supervisor:start_child(?NAME,[User]).
+    {ok,Pid}=supervisor:start_child(?NAME,[User]),
+    {ok,Pid}.
 init(_Args)->
     Strategy={simple_one_for_one,0,1},
     Flags=[#{
