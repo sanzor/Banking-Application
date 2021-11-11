@@ -13,7 +13,6 @@
              ex_banking_enqueuer,
              ex_banking_consumer,
              ex_banking_currency_server,
-             ex_banking_traffic_server,
              ex_banking_client_worker,
              ex_banking_client_worker_sup,
              ex_banking_processing_worker,

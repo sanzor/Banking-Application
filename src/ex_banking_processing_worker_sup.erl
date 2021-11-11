@@ -2,27 +2,21 @@
 -behaviour(supervisor).
 
 -define(NAME,?MODULE).
--export([init/1,start_link/0,get_pool/0]).
+-export([init/1,start_link/0,create_child/0]).
 -define(POOL_SIZE,200).
 start_link()->
-    {ok,Pid}=supervisor:start_link({local,?NAME}, []),
-    {ok,pool_created}=create_pool(),
+    {ok,Pid}=supervisor:start_link({local,?NAME},?MODULE, []),
     {ok,Pid}.
 
-get_pool()->
-    {ok,lists:map(fun({_,ChildPid,_,_})->ChildPid end, supervisor:which_children(?NAME))}.
-create_pool()->
-    [create_child()||_<-lists:seq(0,?POOL_SIZE)],
-    {ok,pool_created}.
 
 create_child()->
     {ok,Cpid}=supervisor:start_child(?NAME, []),
     {ok,Cpid}.
-init(_Args)->
-    Strategy={simple_one_for_one,0,1},
+init(_)->
+    Strategy={simple_one_for_one,1,5},
     Flags=[#{
         id=>ex_banking_processing_worker,
-        start=>{ex_banking_processing_worker,start_link,[_Args]},
+        start=>{ex_banking_processing_worker,start_link,[]},
         restart=>permanent,
         shutdown=>brutal_kill,
         mod=>[ex_banking_client_worker],

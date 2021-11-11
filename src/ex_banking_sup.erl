@@ -27,8 +27,8 @@ start_link() ->
 %%                  modules => modules()}   % optional
 init([]) ->
     SupFlags = #{strategy => one_for_all,
-                 intensity => 0,
-                 period => 1},
+                 intensity => 1,
+                 period => 5},
     ChildSpecs = [
     #{
         id=>ex_banking_currency_server,
@@ -36,16 +36,8 @@ init([]) ->
         restart=>permanent,
         shutdown=>brutal_kill,
         type=>worker,
-        modules=>[ex_banking_currency_server]
+        mod=>[ex_banking_currency_server]
 
-    },
-    #{
-        id=>ex_banking_traffic_server,
-        start=>{ex_banking_traffic_server,start_link,[]},
-        restart=>permanent,
-        shutdown=>brutal_kill,
-        type=>worker,
-        modules=>[ex_banking_traffic_server]
     },
     #{
         id=>ex_banking_account_map,
@@ -53,7 +45,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>worker,
-        modules=>[ex_banking_account_map]
+        mod=>[ex_banking_account_map]
     },
     #{
         id=>ex_banking_account_worker_sup,
@@ -61,7 +53,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>supervisor,
-        modules=>[ex_banking_account_worker_sup]
+        mod=>[ex_banking_account_worker_sup]
     },
     #{
         id=>ex_banking_processing_worker_sup,
@@ -69,7 +61,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>supervisor,
-        modules=>[ex_banking_processing_worker_sup]
+        mod=>[ex_banking_processing_worker_sup]
     },
     #{
         id=>ex_banking_consumer,
@@ -77,7 +69,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>worker,
-        modules=>[ex_banking_consumer]
+        mod=>[ex_banking_consumer]
     },
     #{
         id=>ex_banking_enqueuer,
@@ -85,7 +77,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>5000,
         type=>worker,
-        modules=>[ex_banking_enqueuer]
+        mod=>[ex_banking_enqueuer]
     },
     #{
         id=>ex_banking_client_worker_sup,
@@ -93,7 +85,7 @@ init([]) ->
         restart=>permanent,
         shutdown=>brutal_kill,
         type=>supervisor,
-        modules=>[ex_banking_client_worker_sup]
+        mod=>[ex_banking_client_worker_sup]
     }],
     {ok, {SupFlags, ChildSpecs}}.
 

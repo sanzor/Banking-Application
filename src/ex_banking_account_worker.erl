@@ -9,7 +9,7 @@
     balance=0
 }).
 -define(NAME,?MODULE).
-
+-define(MAX_REQUESTS,10).
 %%%--------------------------------- API 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 start_link(UserId)->
@@ -38,20 +38,26 @@ handle_info(_Message,State)->
     {noreply,State}.
 
 handle_call(get_balance,_From,State)->
-    Balance=State#state.balance,
-    gen_server:reply(_From, {ok,Balance}),
-    {noreply,{ok,Balance},State};
+    case process_info(self(),[message_queue_len])>?MAX_REQUESTS of
+        true -> {reply,too_many_requests_to_user,State};
+        false -> {reply,{ok,State#state.balance},State}
+    end;
+   
 handle_call({deposit,Amount},_From,State)->
-    NewBalance=State#state.balance+Amount,
-    gen_server:reply(_From, {ok,NewBalance}),
-    {noreply,State#state{balance=NewBalance}};
+    case process_info(self(),[message_queue_len])>?MAX_REQUESTS of
+        true -> {reply,too_many_requests_to_user,State};
+        false -> NewBalance=State#state.balance+Amount,
+                {reply,{ok,NewBalance},State#state{balance=NewBalance}}
+    end;
 
 handle_call({withdraw,Amount},_From,State) when State#state.balance<Amount ->
-    gen_server:reply(_From, not_enough_money),
-    {noreply,State};
+    {reply,not_enough_money,State};
 handle_call({withdraw,Amount},_From,State)->
-    NewBalance=State#state.balance-Amount,
-    gen_server:reply(_From, {ok,NewBalance}),
-    {noreply,State#state{balance=NewBalance}}.
+    case process_info(self(),[message_queue_len])>?MAX_REQUESTS of
+        true -> {reply,too_many_requests_to_user,State};
+        false -> NewBalance=State#state.balance-Amount,
+                {reply,{ok,NewBalance},State#state{balance=NewBalance}}
+    end.
+
 
 

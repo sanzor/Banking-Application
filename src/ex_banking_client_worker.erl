@@ -38,10 +38,8 @@ handle_call({create_user,User},_From,State)->
     {stop,normal,ok,State};
 handle_call({get_balance,User,Currency},_From,State)->
     try 
-        {ok,_}=ex_banking_traffic_server:add_user_job(User),
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,Balance}=ex_banking_enqueuer:process_message({get_balance,User}),
-        ok=ex_banking_traffic_server:remove_user_job(User),
         {stop,normal,{ok,Balance/Coefficient},State}
     catch
         Err->{stop,normal,Err,State}
@@ -49,20 +47,16 @@ handle_call({get_balance,User,Currency},_From,State)->
 
 handle_call({deposit,{User,Amount,Currency}},_From,State)->
     try 
-        {ok,_}=ex_banking_traffic_server:add_user_job(User),
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,NewBalance}=ex_banking_enqueuer:process_message({deposit,{User,Amount*Coefficient}}),
-        ok=ex_banking_traffic_server:remove_user_job(User),
         {stop,normal,{ok,NewBalance/Coefficient},State}
     catch
         Err->{stop,normal,Err,State}
     end;
 handle_call({withdraw,{User,Amount,Currency}},_From,State)->
     try 
-        {ok,_}=ex_banking_traffic_server:add_user_job(User),
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,NewBalance}=ex_banking_enqueuer:process_message({withdraw,{User,Amount*Coefficient}}),
-         ok=ex_banking_traffic_server:remove_user_job(User),
         {stop,normal,{ok,NewBalance/Coefficient},State}
     catch
         Err->{stop,normal,Err,State}
@@ -70,37 +64,14 @@ handle_call({withdraw,{User,Amount,Currency}},_From,State)->
 
 handle_call({send,{From_User,To_User,Amount,Currency}},_From,State)->
     try 
-         ok=handle_send_traffic(From_User, To_User),
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,FromNewBalance,ToNewBalance}=ex_banking_enqueuer:process_message({send,{From_User,To_User,Amount*Coefficient}}),
-        ok=ex_banking_traffic_server:remove_user_job(From_User),
-        ok=ex_banking_traffic_server:remove_user_job(To_User),
         {stop,normal,{ok,FromNewBalance/Coefficient,ToNewBalance/Coefficient},State}
     catch
         Err->{stop,normal,Err,State}
     end.
 
-handle_send_traffic(From_User,To_User)->
-        ok=handle_traffic({from,From_User}),
-        ok=handle_traffic({to,To_User}),
-        ok.
 
 
-handle_traffic({to,To_User})->
-    try
-        {ok,_}=ex_banking_traffic_server:add_user_job(To_User),
-         ok
-    catch
-        too_many_requests_to_user->too_many_requests_to_receiver;
-        Err->Err
-    end;
-handle_traffic({from,From_User})->
-    try
-        {ok,_}=ex_banking_traffic_server:add_user_job(From_User),
-         ok
-    catch
-        too_many_requests_to_user->too_many_requests_to_sender;
-        Err->Err
-    end.
     
     

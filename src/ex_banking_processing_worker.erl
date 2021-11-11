@@ -3,7 +3,7 @@
 
 -export([start_link/0,init/1,handle_cast/2,handle_info/2,handle_call/3]).
 
--export([handle_bank_request/2]).
+-export([handle_bank_request/2,reply_account_result/2]).
 
 -record(user,{
     ref,
@@ -29,7 +29,8 @@ init(_)->
 handle_bank_request(To,Message)->
     gen_server:cast(To, Message).
 
-
+reply_account_result(Pid,Message)->
+    gen_server:reply(Pid,Message).
 
 %------------------------- 
 % Handlers
@@ -41,12 +42,12 @@ handle_info(timeout,State)->
 handle_cast({ReplyTo,{create_user,User}},State) ->
     Reply=case ex_banking_account_map:get_user(User) of
              user_already_exists -> user_already_exists;
-             {ok,_U}->          {ok,Pid}=ex_banking_account_sup:create_account_worker(User),
+             {ok,_U}->          {ok,Pid}=ex_banking_account_worker_sup:create_account_worker(User),
                                 Ref=erlang:monitor(process, Pid),
                                 ex_banking_account_map:create_user(User, Ref, Pid)                          
           end,
     ex_banking_enqueuer:send_result(ReplyTo,Reply),
-    {noreply,State};
+    {stop,normal,State};
 
 
 handle_cast({ReplyTo,{get_balance,Uid}},State)->
@@ -55,16 +56,16 @@ handle_cast({ReplyTo,{get_balance,Uid}},State)->
         {ok,User}->ex_banking_account_worker:get_balance(User#user.pid)
     end,
     ex_banking_enqueuer:send_result(ReplyTo,Reply),
-    {noreply,State};
+    {stop,normal,State};
  
 
 handle_cast({ReplyTo,{deposit,{Uid,Amount}}},State) ->
     Reply=case ex_banking_account_map:get_user(Uid) of
-             user_does_not_exist-> user_does_not_exist;
+            user_does_not_exist-> user_does_not_exist;
             {ok,User} -> ex_banking_account_worker:deposit(User#user.pid,Amount) 
            end,
     ex_banking_enqueuer:send_result(ReplyTo,Reply),
-    {noreply,State};
+    {stop,normal,State};
 
 handle_cast({ReplyTo,{withdraw,{Uid,Amount}}},State)->
     Reply=case ex_banking_account_map:get_user(Uid) of
@@ -72,7 +73,7 @@ handle_cast({ReplyTo,{withdraw,{Uid,Amount}}},State)->
         {ok,User} ->ex_banking_account_worker:withdraw(User#user.pid,Amount)
     end,
     ex_banking_enqueuer:send_result(ReplyTo,Reply),
-    {noreply,State};
+    {stop,normal,State};
 
 handle_cast({ReplyTo,{send,{From_Uid,To_Uid,Amount}}},State)->
     Reply=case begin F_U=ex_banking_account_worker:get_user(From_Uid),
@@ -85,7 +86,7 @@ handle_cast({ReplyTo,{send,{From_Uid,To_Uid,Amount}}},State)->
             {{ok,From_User},{ok,To_User}}-> handle_send(From_User#user.pid, To_User#user.pid, Amount)
     end,
     ex_banking_enqueuer:send_result(ReplyTo,Reply),
-    {noreply,State}.
+    {stop,normal,State}.
 
 handle_send(From_User_Pid,To_User_Pid,Amount)->
     WithdrawResult=ex_banking_account_worker:withdraw(From_User_Pid, Amount),
