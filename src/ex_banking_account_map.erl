@@ -23,7 +23,7 @@ create_user(User,Ref,Pid)->
     gen_server:call(?NAME,{create_user,{User,Ref,Pid}}).
 
 get_user(User)->
-    gen_server:call(?NAME, {getUser,User}).
+    gen_server:call(?NAME, {get_user,User}).
 
 %%%%%%%%%%%%%%%%%%%%%% Handlers
 %%%
@@ -32,9 +32,12 @@ init(_Args)->
 
 handle_cast(_Message,State)->
     {noreply,State}.
-handle_call({get_user,User},From,State)->
-    gen_server:reply(From, dict:find(User, State#state.accounts)),
-    {noreply,State};
+handle_call({get_user,User},_From,State)->
+    case dict:find(User, State#state.accounts) of
+        {ok,Value}->{reply,{ok,Value},State};
+        error->{reply,user_does_not_exist,State}
+    end;
+   
 
 handle_call({create_user,{User,Pid,Ref}},_From,State)->
     case dict:is_key(User,State#state.accounts) of
