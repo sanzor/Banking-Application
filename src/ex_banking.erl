@@ -9,7 +9,7 @@
 
 -export([start/2, stop/1]).
 
--export([create_user/1,deposit/3,withdraw/3,get_balance/2]).
+-export([create_user/1,deposit/3,withdraw/3,get_balance/2,send/4]).
 -export([get_currency/1,add_currency/2,remove_currency/1,update_currency/2]).
 
 
@@ -18,9 +18,23 @@
 %----------------------------------------------------------------------------------
 % 
 -spec create_user(User :: string())-> ok | {error, wrong_arguments} | user_already_exists.
-
+create_user(User) when not is_list(User) , not is_atom(User)->{error,wrong_arguments};
 create_user(User)->
-    ex_banking_server:create_user(User).
+    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
+    Result=ex_banking_client_worker:create_user(Pid, User),
+    Result.
+
+
+
+-spec get_balance(User :: string(), Currency :: string()) 
+                  -> {ok, Balance::number()} | {error, wrong_arguments }| 
+                        user_does_not_exist | too_many_requests_to_user.
+get_balance(User,Currency)->
+    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
+    Result=ex_banking_client_worker:get_balance(Pid,{get_balance,{User,Currency}}),
+    Result.
+
+
 
 -spec deposit(User :: string(),
               Amount :: number(), 
@@ -28,7 +42,18 @@ create_user(User)->
                                        {error,wrong_arguments} | 
                                        user_does_not_exist | 
                                        too_many_requests_to_user.
-deposit(User,Amount,Currency)->undefined.
+deposit(_User,Amount,Currency) when 
+                not is_number(Amount) or 
+                not (is_atom(Currency) or is_list(Currency))->{error,wrong_arguments};
+
+
+deposit(User,Amount,Currency)->
+    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
+     Result=ex_banking_client_worker:deposit(Pid, {deposit,{User,Amount,Currency}}),
+     Result.
+
+
+
 
 -spec withdraw( User :: string(), Amount :: number(), Currency :: string()) -> 
                                        {ok, New_balance :: number()} |
@@ -36,11 +61,14 @@ deposit(User,Amount,Currency)->undefined.
                                        user_does_not_exist | 
                                        not_enough_money | 
                                        too_many_requests_to_user.
-withdraw(User,Amount,Currency)->undefined.
-
--spec get_balance(User :: string(), Currency :: string()) 
-                  -> {ok, Balance::number()} | {error, wrong_arguments }| user_does_not_exist | too_many_requests_to_user.
-get_balance(User,Currency)->undefined.
+withdraw(_User,Amount,Currency) when 
+                            not is_number(Amount) or 
+                            not (is_atom(Currency) or is_list(Currency))->{error,wrong_arguments};
+                    
+withdraw(User,Amount,Currency)->
+    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
+    Result=ex_banking_client_worker:withdraw(Pid,{withdraw,{User,Amount,Currency}}),
+    Result.
 
 
 -spec send(From_User :: string(), To_User :: string(), Amount :: number(), Currency :: string()) ->
@@ -48,7 +76,14 @@ get_balance(User,Currency)->undefined.
                                      {error, wrong_arguments} | not_enough_money | sender_does_not_exist | 
                                      receiver_does_not_exist | too_many_requests_to_sender | 
                                      too_many_requests_to_receiver.
-send(From_User,To_User,Amount,Currency)->undefined.
+send(_From_User,_To_User,Amount,Currency) when 
+                not is_number(Amount) or 
+                not (is_atom(Currency) or is_list(Currency))->{error,wrong_arguments};
+            
+send(From_User,To_User,Amount,Currency)->
+    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
+    Result=ex_banking_client_worker:send(Pid,{send,{From_User,To_User,Amount,Currency}}),
+    Result.
 
 
 

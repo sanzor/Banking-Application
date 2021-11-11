@@ -2,13 +2,13 @@
 -behaviour(supervisor).
 
 -define(NAME,?MODULE).
--export([init/1,start_link/0]).
+-export([init/1,start_link/0,fetch_worker/0]).
 -define(POOL_SIZE,200).
 start_link()->
     {ok,Pid}=supervisor:start_link({local,?NAME},?MODULE, []),
     {ok,Pid}.
 
-create_child()->
+fetch_worker()->
     {ok,Cpid}=supervisor:start_child(?NAME, []),
     {ok,Cpid}.
 init(_)->
@@ -17,7 +17,7 @@ init(_)->
     Flags=[#{
         id=>ex_banking_client_worker,
         start=>{ex_banking_client_worker,start_link,[]},
-        restart=>permanent,
+        restart=>transient,
         shutdown=>brutal_kill,
         mod=>[ex_banking_client_worker],
         type=>worker

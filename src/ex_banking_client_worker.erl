@@ -4,9 +4,8 @@
 -export([handle_call/3,handle_cast/2,init/1,start_link/0,send_result/2]).
 
 -define(NAME,?MODULE).
--define(TIMEOUT,3000).
 -record(state,{
-   
+   counter_Ref
 }).
 
 %%%%  Call API %%%%%%%%%%%%%%%%%
@@ -14,8 +13,8 @@ start_link()->
     {ok,Pid}=gen_server:start_link({local,?NAME}, ?NAME, [],[]),
     {ok,Pid}.
 
-init(_)->
-    {ok,#state{}}.
+init(CounterRef)->
+    {ok,#state{counter_Ref=CounterRef}}.
 create_user(Pid,User)->
     gen_server:call(Pid,{create_user,User}).
 get_balance(Pid,{User,Currency})->
@@ -36,16 +35,16 @@ handle_cast(_Request,State)->{noreply,State}.
 
 handle_call({create_user,User},_From,State)->
     ok=ex_banking_enqueuer:process_message({create_user,User}),
-    {reply,ok,State};
+    {stop,normal,ok,State};
 handle_call({get_balance,User,Currency},_From,State)->
     try 
         {ok,_}=ex_banking_traffic_server:add_user_job(User),
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,Balance}=ex_banking_enqueuer:process_message({get_balance,User}),
         ok=ex_banking_traffic_server:remove_user_job(User),
-        {reply,{ok,Balance/Coefficient},State,?TIMEOUT}
+        {stop,normal,{ok,Balance/Coefficient},State}
     catch
-        Err->{reply,Err,State,?TIMEOUT}
+        Err->{stop,normal,Err,State}
     end;
 
 handle_call({deposit,{User,Amount,Currency}},_From,State)->
@@ -54,9 +53,9 @@ handle_call({deposit,{User,Amount,Currency}},_From,State)->
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,NewBalance}=ex_banking_enqueuer:process_message({deposit,{User,Amount*Coefficient}}),
         ok=ex_banking_traffic_server:remove_user_job(User),
-        {reply,{ok,NewBalance/Coefficient},State,?TIMEOUT}
+        {stop,normal,{ok,NewBalance/Coefficient},State}
     catch
-        Err->{reply,Err,State}
+        Err->{stop,normal,Err,State}
     end;
 handle_call({withdraw,{User,Amount,Currency}},_From,State)->
     try 
@@ -64,9 +63,9 @@ handle_call({withdraw,{User,Amount,Currency}},_From,State)->
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
         {ok,NewBalance}=ex_banking_enqueuer:process_message({withdraw,{User,Amount*Coefficient}}),
          ok=ex_banking_traffic_server:remove_user_job(User),
-        {reply,{ok,NewBalance/Coefficient},State,?TIMEOUT}
+        {stop,normal,{ok,NewBalance/Coefficient},State}
     catch
-        Err->{reply,Err,State,?TIMEOUT}
+        Err->{stop,normal,Err,State}
     end;
 
 handle_call({send,{From_User,To_User,Amount,Currency}},_From,State)->
@@ -76,9 +75,9 @@ handle_call({send,{From_User,To_User,Amount,Currency}},_From,State)->
         {ok,FromNewBalance,ToNewBalance}=ex_banking_enqueuer:process_message({send,{From_User,To_User,Amount*Coefficient}}),
         ok=ex_banking_traffic_server:remove_user_job(From_User),
         ok=ex_banking_traffic_server:remove_user_job(To_User),
-        {reply,{ok,FromNewBalance/Coefficient,ToNewBalance/Coefficient},State,?TIMEOUT}
+        {stop,normal,{ok,FromNewBalance/Coefficient,ToNewBalance/Coefficient},State}
     catch
-        Err->{reply,Err,State,?TIMEOUT}
+        Err->{stop,normal,Err,State}
     end.
 
 handle_send_traffic(From_User,To_User)->
