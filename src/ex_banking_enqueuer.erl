@@ -38,12 +38,12 @@ init(_)->
 handle_info(timeout,State)->
     {stop,State}.
 handle_cast({send_result,{To,Message}},State)->
-    ex_banking_server:send_result(To, Message),
+    ex_banking_client_worker:send_result(To, Message),
     {noreply,State}.
 handle_call({process_message,Message},_From,State)->
     {noreply,State#state{queue=queue:in({_From,Message}, State#state.queue)}};
 
-handle_call(consume,_From,State)->
+handle_call(consume_message,_From,State)->
     case queue:out(State#state.queue) of
         {{value,Item},RemQueue}->{reply,Item,State#state{queue=RemQueue}};
         {empty,_}->{reply,empty,State}
