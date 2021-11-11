@@ -1,11 +1,12 @@
 -module(ex_banking_consumer).
--export([start_link/0]).
+-export([start_link/0,startl/0]).
 -define(NAME,?MODULE).
 
 -record(state,{
 }).
 start_link()->
-    Pid=spawn_link(?MODULE, fun()->startl() end),
+    Pid=spawn(?MODULE, startl,[]),
+    register(?MODULE,Pid),
     {ok,Pid}.
 startl()->
     loop(#state{}).
