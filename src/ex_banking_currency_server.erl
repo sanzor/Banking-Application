@@ -35,7 +35,7 @@ get_currency(Currency)->
 -spec add_currency(Currency, Coefficient::number())->{ok,{added,Currency}} | 
                                                       currency_already_exists |{error , wrong_arguments}
                                                       when Currency :: list() | atom() .
-add_currency(Currency,Coefficient) when not is_number(Coefficient) ;not Coefficient>0; not is_list(Currency) ->
+add_currency(Currency,Coefficient) when not is_number(Coefficient) ;not Coefficient>0; not (is_list(Currency) or is_atom(Currency))  ->
     {error,invalid_arguments};
 
 add_currency(Currency,Coefficient)->
@@ -75,13 +75,13 @@ handle_call({get_currency,Currency},_From,State)->
     end,
     {reply,Reply,State};
 handle_call({add_currency,Currency,Coefficient},_From,State)->
-    Reply=case dict:find(Currency, State#state.currencies) of
+    case dict:find(Currency, State#state.currencies) of
             {ok,_Value}->{reply,currency_already_exists,State};
             error -> NewDict=dict:store(Currency,Coefficient,State#state.currencies),
                      {reply,{ok,{added,Currency}},State#state{currencies=NewDict}}
             
-    end,
-    {reply,Reply,State};
+    end;
+    
 
 handle_call({remove_currency,Currency},_From,State)->
     NewDict=dict:erase(Currency, State),

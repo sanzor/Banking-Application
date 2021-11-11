@@ -56,30 +56,6 @@ init([]) ->
         mod=>[ex_banking_account_worker_sup]
     },
     #{
-        id=>ex_banking_processing_worker_sup,
-        start=>{ex_banking_processing_worker_sup,start_link,[]},
-        restart=>permanent,
-        shutdown=>5000,
-        type=>supervisor,
-        mod=>[ex_banking_processing_worker_sup]
-    },
-    #{
-        id=>ex_banking_consumer,
-        start=>{ex_banking_consumer,start_link,[]},
-        restart=>permanent,
-        shutdown=>5000,
-        type=>worker,
-        mod=>[ex_banking_consumer]
-    },
-    #{
-        id=>ex_banking_enqueuer,
-        start=>{ex_banking_enqueuer,start_link,[]},
-        restart=>permanent,
-        shutdown=>5000,
-        type=>worker,
-        mod=>[ex_banking_enqueuer]
-    },
-    #{
         id=>ex_banking_client_worker_sup,
         start=>{ex_banking_client_worker_sup,start_link,[]},
         restart=>permanent,

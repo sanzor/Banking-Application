@@ -34,12 +34,12 @@ send_result(Pid,Message)->
 handle_cast(_Request,State)->{noreply,State}.
 
 handle_call({create_user,User},_From,State)->
-    ok=ex_banking_enqueuer:process_message({create_user,User}),
+    ok=ex_banking_business:create_user(User),
     {stop,normal,ok,State};
 handle_call({get_balance,User,Currency},_From,State)->
     try 
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
-        {ok,Balance}=ex_banking_enqueuer:process_message({get_balance,User}),
+        {ok,Balance}=ex_banking_business:get_balance(User),
         {stop,normal,{ok,Balance/Coefficient},State}
     catch
         Err->{stop,normal,Err,State}
@@ -48,7 +48,7 @@ handle_call({get_balance,User,Currency},_From,State)->
 handle_call({deposit,{User,Amount,Currency}},_From,State)->
     try 
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
-        {ok,NewBalance}=ex_banking_enqueuer:process_message({deposit,{User,Amount*Coefficient}}),
+        {ok,NewBalance}=ex_banking_business:deposit(User,Amount*Coefficient),
         {stop,normal,{ok,NewBalance/Coefficient},State}
     catch
         Err->{stop,normal,Err,State}
@@ -56,7 +56,7 @@ handle_call({deposit,{User,Amount,Currency}},_From,State)->
 handle_call({withdraw,{User,Amount,Currency}},_From,State)->
     try 
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
-        {ok,NewBalance}=ex_banking_enqueuer:process_message({withdraw,{User,Amount*Coefficient}}),
+        {ok,NewBalance}=ex_banking_business:withdraw(User,Amount*Coefficient),
         {stop,normal,{ok,NewBalance/Coefficient},State}
     catch
         Err->{stop,normal,Err,State}
@@ -65,7 +65,7 @@ handle_call({withdraw,{User,Amount,Currency}},_From,State)->
 handle_call({send,{From_User,To_User,Amount,Currency}},_From,State)->
     try 
         {ok,Coefficient}=ex_banking_currency_server:get_currency(Currency),
-        {ok,FromNewBalance,ToNewBalance}=ex_banking_enqueuer:process_message({send,{From_User,To_User,Amount*Coefficient}}),
+        {ok,FromNewBalance,ToNewBalance}=ex_banking_business:send(From_User,To_User,Amount*Coefficient),
         {stop,normal,{ok,FromNewBalance/Coefficient,ToNewBalance/Coefficient},State}
     catch
         Err->{stop,normal,Err,State}
