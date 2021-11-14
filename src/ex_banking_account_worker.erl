@@ -38,10 +38,11 @@ handle_info(_Message,State)->
     {noreply,State}.
 
 handle_call(get_balance,_From,State)->
-    case process_info(self(),[message_queue_len])>?MAX_REQUESTS of
-        true -> {reply,too_many_requests_to_user,State};
-        false -> {reply,{ok,State#state.balance},State}
-    end;
+    {reply,too_many_requests_to_user,State};
+    % case process_info(self(),[message_queue_len])>?MAX_REQUESTS of
+    %     true -> {reply,too_many_requests_to_user,State};
+    %     false -> {reply,{ok,State#state.balance},State}
+    % end;
    
 handle_call({deposit,Amount},_From,State)->
     case process_info(self(),[message_queue_len])>?MAX_REQUESTS of

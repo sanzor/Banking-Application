@@ -13,11 +13,11 @@ fetch_worker()->
     {ok,Cpid}.
 init(_)->
     % AtomicsRef=atomics:new(?POOL_SIZE,[{signed,false}]),
-    Strategy={simple_one_for_one,1,5},
+    Strategy={simple_one_for_one,2,5},
     Flags=[#{
         id=>ex_banking_client_worker,
         start=>{ex_banking_client_worker,start_link,[]},
-        restart=>transient,
+        restart=>temporary,
         shutdown=>brutal_kill,
         mod=>[ex_banking_client_worker],
         type=>worker
