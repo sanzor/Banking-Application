@@ -38,11 +38,12 @@ handle_call({create_user,User},_From,State)->
    
 handle_call({get_balance,{User,Currency}},_From,State)->
         
-            Reply=case ex_banking_currency_server:get_currency(Currency) of
-            {ok,Coefficient}->
-                             case ex_banking_business:get_balance(User) of
-                                         {ok,Balance}->{stop,normal,{ok,Balance},State};
-                                         Smth->throw(101)
+        case ex_banking_currency_server:get_currency(Currency) of
+            {ok,_Coefficient}->
+                             try ex_banking_business:get_balance(User) of
+                                {ok,Balance}->{stop,normal,{ok,Balance/_Coefficient},State}
+                             catch
+                                Err -> {stop,normal,Err,State}
                              end;
             currency_does_not_exist -> {stop,normal,wrong_arguments,State};
             Err-> {stop,normal,Err,State}
