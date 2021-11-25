@@ -1,4 +1,4 @@
--module(ex_banking_account_worker).
+-module(ex_banking_account).
 -behaviour(gen_server).
 -export([init/1,start_link/1]).
 -export([handle_call/3,handle_info/2,handle_cast/2]).
@@ -25,7 +25,7 @@ withdraw(Pid,Amount)->
     gen_server:call(Pid, {withdraw,Amount}).
 
 get_balance(Pid)->
-    Result=gen_server:call(Pid, get_balance).
+    gen_server:call(Pid, get_balance).
 
 
 %%%% Handlers
@@ -38,8 +38,11 @@ handle_info(_Message,State)->
     {noreply,State}.
 
 handle_call(Request,_From,State)->
-    check_capacity(State),
-    do_handle_call(Request, _From, State).
+    ok=check_capacity(State),
+    Result=do_handle_call(Request, _From, State),
+    Result.
+    
+
    
 % handle_call({deposit,Amount},_From,State)->
 %     case process_info(self(),[message_queue_len])>?MAX_REQUESTS of
@@ -60,8 +63,8 @@ handle_call(Request,_From,State)->
 check_capacity(State)->
     [{_,Size}]=process_info(self(),[message_queue_len]),
     case Size > ?MAX_REQUESTS of
-        true -> ok;
-        false -> throw({reply,too_many_requests_to_user,State})
+        true ->  throw({reply,too_many_requests_to_use,State});
+        false -> ok
     end.
 
 do_handle_call(get_balance,From,State)->

@@ -48,16 +48,16 @@ init([]) ->
         mod=>[ex_banking_account_map]
     },
     #{
-        id=>ex_banking_account_worker_sup,
-        start=>{ex_banking_account_worker_sup,start_link,[]},
+        id=>ex_banking_account_sup,
+        start=>{ex_banking_account_sup,start_link,[]},
         restart=>permanent,
         shutdown=>5000,
         type=>supervisor,
         mod=>[ex_banking_account_worker_sup]
     },
     #{
-        id=>ex_banking_client_worker_sup,
-        start=>{ex_banking_client_worker_sup,start_link,[]},
+        id=>ex_banking_client_sup,
+        start=>{ex_banking_client_sup,start_link,[]},
         restart=>permanent,
         shutdown=>brutal_kill,
         type=>supervisor,
