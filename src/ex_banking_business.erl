@@ -24,9 +24,16 @@ get_balance(Uid)->
     
   
 handle_get_balance({ok,User})->
-    ex_banking_account_worker:get_balance(User#user.pid);
+    
+    try ex_banking_account_worker:get_balance(User#user.pid) of
+        Result->Result
+    catch
+       Class:Reason:StackTrace -> io:format("~p~n~n~p~n~n~p",[Class,Reason,StackTrace]),
+                                  {ok,555}
+    end.
+
    
-handle_get_balance(Err)->Err.
+
 
 
 deposit(Uid,Amount) ->

@@ -103,7 +103,7 @@ test(_User)->
 %--------------------Currency API-------------------------------------------------
 %----------------------------------------------------------------------------------
 get_currency(Currency)->
-    ex_banking_currency_server:get_currency(Currency).
+    ex_banking_currency_server:get_coefficient(Currency).
 add_currency(Currency,Coefficient)->
     ex_banking_currency_server:add_currency(Currency, Coefficient).
 
