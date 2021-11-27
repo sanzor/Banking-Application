@@ -43,29 +43,31 @@ handle_call(Request,_From,State)->
     Result.
     
 
-   
-% handle_call({deposit,Amount},_From,State)->
-%     case process_info(self(),[message_queue_len])>?MAX_REQUESTS of
-%         true -> {reply,too_many_requests_to_user,State};
-%         false -> NewBalance=State#state.balance+Amount,
-%                 {reply,{ok,NewBalance},State#state{balance=NewBalance}}
-%     end;
+do_handle_call(get_balance,From,State)->
+    {reply,{ok,State#state.balance},State};
 
-% handle_call({withdraw,Amount},_From,State) when State#state.balance<Amount ->
-%     {reply,not_enough_money,State};
-% handle_call({withdraw,Amount},_From,State)->
-%     case process_info(self(),[message_queue_len])>?MAX_REQUESTS of
-%         true -> {reply,too_many_requests_to_user,State};
-%         false -> NewBalance=State#state.balance-Amount,
-%                 {reply,{ok,NewBalance},State#state{balance=NewBalance}}
-%     end.
+do_handle_call({deposit,Amount},_From,State)->
+    NewBalance=State#state.balance+Amount,
+    {reply,{ok,NewBalance},State#state{balance=NewBalance}};
+  
+do_handle_call({withdraw,Amount},_From,State) when State#state.balance<Amount ->
+    {reply,not_enough_money,State};
 
+do_handle_call({withdraw,Amount},_From,State)->
+    NewBalance=State#state.balance-Amount,
+    {reply,{ok,NewBalance},State#state{balance=NewBalance}}.
+
+    
 check_capacity(State)->
     [{_,Size}]=process_info(self(),[message_queue_len]),
     case Size > ?MAX_REQUESTS of
-        true ->  throw({reply,too_many_requests_to_use,State});
+        true ->  throw({reply,too_many_requests_to_user,State});
         false -> ok
     end.
 
-do_handle_call(get_balance,From,State)->
-    {reply,State#state.balance,State}.
+
+
+
+
+
+

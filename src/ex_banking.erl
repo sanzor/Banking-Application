@@ -32,8 +32,8 @@ create_user(User)->
                         user_does_not_exist | too_many_requests_to_user.
 get_balance(User,Currency)->
     {ok,Pid}=ex_banking_client_sup:fetch_worker(),
-    Result= ex_banking_client:get_balance(Pid,{User,Currency}),
-    Result.
+    {ok,Balance}= ex_banking_client:get_balance(Pid,{User,Currency}),
+    {ok,Balance}.
             
 
 
@@ -90,9 +90,10 @@ send(From_User,To_User,Amount,Currency)->
     Result.
 
 test(_User)->
-    ex_banking:add_currency(eur,1),
-    ex_banking:create_user(adi),
-    ex_banking:get_balance(adi,eur).
+    {ok,{added,eur}}=ex_banking:add_currency(eur,1),
+    ok=ex_banking:create_user(adi),
+    {ok,Balance}=ex_banking:get_balance(adi,eur),
+     Balance.
     % try
     %     ex_banking:deposit(_User, 100, eur)
     % catch
