@@ -8,7 +8,7 @@
 -behaviour(application).
 
 -export([start/2, stop/1]).
-
+-export([test/1]).
 -export([create_user/1,deposit/3,withdraw/3,get_balance/2,send/4]).
 -export([get_currency/1,add_currency/2,remove_currency/1,update_currency/2]).
 
@@ -20,9 +20,10 @@
 -spec create_user(User :: string())-> ok | {error, wrong_arguments} | user_already_exists.
 create_user(User) when not is_list(User) , not is_atom(User)->{error,wrong_arguments};
 create_user(User)->
-    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
-    Result=ex_banking_client_worker:create_user(Pid, User),
+    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
+    Result= ex_banking_client:create_user(Pid, User),
     Result.
+           
 
 
 
@@ -30,9 +31,10 @@ create_user(User)->
                   -> {ok, Balance::number()} | {error, wrong_arguments }| 
                         user_does_not_exist | too_many_requests_to_user.
 get_balance(User,Currency)->
-    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
-    Result=ex_banking_client_worker:get_balance(Pid,{get_balance,{User,Currency}}),
-    Result.
+    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
+    {ok,Balance}= ex_banking_client:get_balance(Pid,{User,Currency}),
+    {ok,Balance}.
+            
 
 
 
@@ -48,9 +50,10 @@ deposit(_User,Amount,Currency) when
 
 
 deposit(User,Amount,Currency)->
-    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
-     Result=ex_banking_client_worker:deposit(Pid, {deposit,{User,Amount,Currency}}),
-     Result.
+    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
+    Result= ex_banking_client:deposit(Pid, {User,Amount,Currency}),
+    Result.
+           
 
 
 
@@ -66,9 +69,10 @@ withdraw(_User,Amount,Currency) when
                             not (is_atom(Currency) or is_list(Currency))->{error,wrong_arguments};
                     
 withdraw(User,Amount,Currency)->
-    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
-    Result=ex_banking_client_worker:withdraw(Pid,{withdraw,{User,Amount,Currency}}),
+    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
+    Result=ex_banking_client:withdraw(Pid,{User,Amount,Currency}),
     Result.
+            
 
 
 -spec send(From_User :: string(), To_User :: string(), Amount :: number(), Currency :: string()) ->
@@ -81,17 +85,26 @@ send(_From_User,_To_User,Amount,Currency) when
                 not (is_atom(Currency) or is_list(Currency))->{error,wrong_arguments};
             
 send(From_User,To_User,Amount,Currency)->
-    {ok,Pid}=ex_banking_client_worker_sup:fetch_worker(),
-    Result=ex_banking_client_worker:send(Pid,{send,{From_User,To_User,Amount,Currency}}),
+    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
+    Result=ex_banking_client:send(Pid,{From_User,To_User,Amount,Currency}),
     Result.
 
-
+test(_User)->
+    {ok,{added,eur}}=ex_banking:add_currency(eur,1),
+    ok=ex_banking:create_user(adi),
+    {ok,Balance}=ex_banking:get_balance(adi,eur),
+     Balance.
+    % try
+    %     ex_banking:deposit(_User, 100, eur)
+    % catch
+    %     Err ->Err
+    % end.
 
 %----------------------------------------------------------------------------------
 %--------------------Currency API-------------------------------------------------
 %----------------------------------------------------------------------------------
 get_currency(Currency)->
-    ex_banking_currency_server:get_currency(Currency).
+    ex_banking_currency_server:get_coefficient(Currency).
 add_currency(Currency,Coefficient)->
     ex_banking_currency_server:add_currency(Currency, Coefficient).
 

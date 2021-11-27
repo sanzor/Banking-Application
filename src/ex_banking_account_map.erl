@@ -19,8 +19,9 @@
 start_link()->
     gen_server:start_link({local,?NAME},?NAME, [],[]).
 
-create_user(User,Ref,Pid)->
-    gen_server:call(?NAME,{create_user,{User,Ref,Pid}}).
+-spec create_user(UserId,Pid,Ref)->  account_already_exists | ok  when Ref::reference(),Pid::pid(),UserId::list()|atom().
+create_user(User,Pid,Ref)->
+    gen_server:call(?NAME,{create_user,{User,Pid,Ref}}).
 
 get_user(User)->
     gen_server:call(?NAME, {get_user,User}).
@@ -32,17 +33,17 @@ init(_Args)->
 
 handle_cast(_Message,State)->
     {noreply,State}.
-handle_call({get_user,User},_From,State)->
-    case dict:find(User, State#state.accounts) of
+handle_call({get_user,UserId},_From,State)->
+    case dict:find(UserId, State#state.accounts) of
         {ok,Value}->{reply,{ok,Value},State};
         error->{reply,user_does_not_exist,State}
     end;
    
 
-handle_call({create_user,{User,Pid,Ref}},_From,State)->
-    case dict:is_key(User,State#state.accounts) of
-                true ->{reply,user_already_exists,State};
-                false ->NewDict=dict:store(User,#user{pid=Pid,ref=Ref},State#state.accounts),
+handle_call({create_user,{UserId,Pid,Ref}},_From,State)->
+    case dict:is_key(UserId,State#state.accounts) of
+                true ->{reply,account_already_exists,State};
+                false ->NewDict=dict:store(UserId,#user{pid=Pid,ref=Ref},State#state.accounts),
                         {reply,ok,State#state{accounts=NewDict}}
     end.
     

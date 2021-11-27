@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 -export([start_link/0,init/1]).
 -export([handle_call/3,handle_cast/2]).
--export([get_currency/1,add_currency/2,remove_currency/1,update_currency/2]).
+-export([get_coefficient/1,add_currency/2,remove_currency/1,update_currency/2]).
 
 -define(NAME,?MODULE).
 -record(state,{
@@ -23,11 +23,11 @@ init(Args)->
     {ok,#state{currencies=dict:new()}}.
 
 
--spec get_currency(Currency)->{ok,{Currency, Coefficient::number()}} | currency_not_found |  {error , wrong_arguments} 
+-spec get_coefficient(Currency)->{ok,{Currency, Coefficient::number()}} | currency_not_found |  {error , wrong_arguments} 
                                     when Currency:: list() | atom().
-get_currency(Currency) when not is_list(Currency) , not is_atom(Currency)->
+get_coefficient(Currency) when not is_list(Currency) , not is_atom(Currency)->
     {error,invalid_arguments};
-get_currency(Currency)->
+get_coefficient(Currency)->
     gen_server:call(?NAME, {get_currency,Currency}).
 
 
