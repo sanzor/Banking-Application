@@ -17,7 +17,7 @@ start_link()->
 init(CounterRef)->
     {ok,#state{counter_Ref=CounterRef}}.
 create_user(Pid,User)->
-    gen_server:call(Pid,{create_user,User}).
+    gen_server:call(Pid,{undefined,{create_user,User}}).
 get_balance(Pid,{User,Currency})->
     gen_server:call(Pid,{Currency,{get_balance,User}}).
 deposit(Pid,{User,Amount,Currency})->
@@ -35,13 +35,13 @@ send_result(Pid,Message)->
 handle_cast(_Request,State)->{noreply,State}.
 
 
-handle_call({create_user,UserId},_From,State)->
-    ok=do_create_user(UserId, State),
-    {stop,normal,ok,State};
-
 handle_call({Currency,Request},From,State)->
     {ok,Coefficient}=can_get_coefficient(Currency, State),
      do_call(Coefficient,Request,From,State).
+
+do_call(undefined,{create_user,UserId},_From,State)->
+    ok=do_create_user(UserId, State),
+    {stop,normal,ok,State};
 
 do_call(Coefficient,{get_balance,UserId},_From,State)->
     {ok,User}=get_user(UserId,State),
