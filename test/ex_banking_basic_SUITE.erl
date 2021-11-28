@@ -1,4 +1,4 @@
--module(ex_banking_SUITE).
+-module(ex_banking_basic_SUITE).
 -author("adriansan_93@yahoo.com").
 
 -include_lib("common_test/include/ct.hrl").
@@ -9,8 +9,7 @@
     init_per_suite/1,
     end_per_suite/1,
     init_per_testcase/2,
-    end_per_testcase/2,
-    spawn_test/2]).
+    end_per_testcase/2]).
 
 -export([can_create_user/1,
         can_not_create_user_multiple_times/1,
@@ -37,7 +36,6 @@
          can_not_send_with_no_receiver/1,
          can_not_send_with_not_enough_balance/1]).
 
--export([can_limit_requests_to_user/1]).
 init_per_suite(_Config)->
     [].
 end_per_suite(_Config)->
@@ -82,10 +80,7 @@ all()->[
     can_send,
     can_not_send_with_no_sender,
     can_not_send_with_no_receiver,
-    can_not_send_with_not_enough_balance,
-
-    can_limit_requests_to_user
-    
+    can_not_send_with_not_enough_balance
 ].
 can_create_user(_Config)->
     ?assertEqual(ok,ex_banking:create_user(some_user)).
@@ -228,30 +223,3 @@ can_not_send_with_not_enough_balance(_Config)->
     {ok,_}=ex_banking:deposit(From_User,InitDepositAmount,Currency),
     Result=ex_banking:send(From_User,To_User, Take_Amount, Currency),
     ?assertMatch(not_enough_money,Result).
-
-can_limit_requests_to_user(_Config)->
-    
-    {User,DepositAmount,RequestCount}={adi,100,4},
-    ok=ex_banking:create_user(User),
-    ex_banking:deposit(User, DepositAmount, eur),
-    [spawn(?MODULE,spawn_test,[self(),User])|| _<-lists:seq(0, RequestCount)],
-    List=get_send_results(RequestCount,0),
-    
-    ToCompare=lists:any(fun(Elem)->Elem=:=too_many_requests_to_user end, List),
-    ?assertEqual(true,ToCompare).
-
-spawn_test(Pid,User)->
-    Pid ! ex_banking:get_balance(User, eur).
-get_send_results(MaxRequests,_Count)->
-    loop_results(MaxRequests,0,[]).
-
-loop_results(MaxCount,MaxCount,List)->List;
-loop_results(MaxCount,Count,List)->
-    receive 
-        Msg -> loop_results(MaxCount,Count+1,[Msg|List])
-    end.
-% can_withdraw(_Config)->
-%     {User,Currency,Coef}={adi,usd,0.75},
-%     ex_banking:add_currency(Currency,Coef),
-%     ok=ex_banking:create_user(User),
-%     {ok,NewBalance}

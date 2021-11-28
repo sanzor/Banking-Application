@@ -8,7 +8,9 @@
     stdlib
    ]},
   {env,[
-      {base_currency,eur}
+      {base_currency,eur},
+      {max_requests,10},
+      {throttle_milliseconds,0}
     ]},
   {modules, [ex_banking,
              ex_banking_sup,
