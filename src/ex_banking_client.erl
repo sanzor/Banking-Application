@@ -87,17 +87,15 @@ get_user(UserId,State)->
         {ok,User}-> {ok,User};
          user_does_not_exist  -> throw({stop,normal,user_does_not_exist,State})
     end. 
-
 get_sender_and_receiver(From_Uid,To_Uid,State)->
-    case begin From_User=ex_banking_account_map:get_user(From_Uid),
-               To_User=ex_banking_account_map:get_user(To_Uid),
-               {From_User,To_User} 
-    end 
-    of 
-        {user_does_not_exist,_} ->throw({stop,normal,sender_does_not_exist,State});
-        {_,user_does_not_exist} ->throw({stop,normal,receiver_does_not_exist,State});
-        {{ok,From_User},{ok,To_User}}->{ok,From_User,To_User}
-end.
+    From_User=ex_banking_account_map:get_user(From_Uid),
+    To_User=ex_banking_account_map:get_user(To_Uid),
+    handle_sender_receiver_identity(From_User,To_User,State).
+
+
+handle_sender_receiver_identity(user_does_not_exist,_,State)->throw({stop,normal,sender_does_not_exist,State});
+handle_sender_receiver_identity(_,user_does_not_exist,State)->throw({stop,normal,receiver_does_not_exist,State});
+handle_sender_receiver_identity({ok,From},{ok,To},_)->{ok,From,To}.
 
 handle_send(From_User_Pid,To_User_Pid,Amount,State)->
     WithdrawResult=ex_banking_account:withdraw(From_User_Pid, Amount),

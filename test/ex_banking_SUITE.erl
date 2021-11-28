@@ -9,7 +9,8 @@
     init_per_suite/1,
     end_per_suite/1,
     init_per_testcase/2,
-    end_per_testcase/2]).
+    end_per_testcase/2,
+    spawn_test/2]).
 
 -export([can_create_user/1,
         can_not_create_user_multiple_times/1,
@@ -30,6 +31,13 @@
          
          can_deposit_withdraw_same_currency/1,
          can_deposit_withdraw_different_currencies/1]).
+
+-export([can_send/1,
+         can_not_send_with_no_sender/1,
+         can_not_send_with_no_receiver/1,
+         can_not_send_with_not_enough_balance/1]).
+
+-export([can_limit_requests_to_user/1]).
 init_per_suite(_Config)->
     [].
 end_per_suite(_Config)->
@@ -69,7 +77,14 @@ all()->[
     can_withdraw_some,
 
     can_deposit_withdraw_same_currency,
-    can_deposit_withdraw_different_currencies
+    can_deposit_withdraw_different_currencies,
+
+    can_send,
+    can_not_send_with_no_sender,
+    can_not_send_with_no_receiver,
+    can_not_send_with_not_enough_balance,
+
+    can_limit_requests_to_user
     
 ].
 can_create_user(_Config)->
@@ -178,9 +193,63 @@ can_deposit_withdraw_different_currencies(_Config)->
     {ok,DepositBalance}=ex_banking:deposit(User, DepositAmount, DepositCurrency),
     ?assertEqual(DepositAmount,DepositBalance),
     {ok,WithdrawBalance}=ex_banking:withdraw(User, WithdrawAmount, WithdrawCurrency),
-    ?assertEqual(DepositAmount-
-                 WithdrawAmount/(DepositCoefficient/WithdrawCoefficient),WithdrawBalance).
+    ?assertEqual(DepositAmount*(DepositCoefficient/WithdrawCoefficient)-WithdrawAmount*WithdrawCoefficient,WithdrawBalance).
 
+
+can_send(_Config)->
+    {From_User,To_User,Currency}={adi,dan,eur},
+    {InitDepositAmount,Take_Amount}={100,75},
+    ok=ex_banking:create_user(From_User),
+    ok=ex_banking:create_user(To_User),
+    {ok,_}=ex_banking:deposit(From_User,InitDepositAmount,Currency),
+    Result=ex_banking:send(From_User,To_User, Take_Amount, Currency),
+    ?assertMatch({ok,_,_},Result).
+
+can_not_send_with_no_sender(_Config)->
+    {From_User,To_User,Currency}={adi,dan,eur},
+    {InitDepositAmount,Take_Amount}={100,75},
+     ok=ex_banking:create_user(To_User),
+     Result=ex_banking:send(From_User,To_User, Take_Amount, Currency),
+     ?assertMatch(sender_does_not_exist, Result).
+
+can_not_send_with_no_receiver(_Config)->
+        {From_User,To_User,Currency}={adi,dan,eur},
+        {InitDepositAmount,Take_Amount}={100,75},
+         ok=ex_banking:create_user(From_User),
+         {ok,_}=ex_banking:deposit(From_User,InitDepositAmount,Currency),
+         Result=ex_banking:send(From_User,To_User, Take_Amount, Currency),
+         ?assertMatch(receiver_does_not_exist, Result).
+
+can_not_send_with_not_enough_balance(_Config)->
+    {From_User,To_User,Currency}={adi,dan,eur},
+    {InitDepositAmount,Take_Amount}={100,125},
+    ok=ex_banking:create_user(From_User),
+    ok=ex_banking:create_user(To_User),
+    {ok,_}=ex_banking:deposit(From_User,InitDepositAmount,Currency),
+    Result=ex_banking:send(From_User,To_User, Take_Amount, Currency),
+    ?assertMatch(not_enough_money,Result).
+
+can_limit_requests_to_user(_Config)->
+    
+    {User,DepositAmount,RequestCount}={adi,100,4},
+    ok=ex_banking:create_user(User),
+    ex_banking:deposit(User, DepositAmount, eur),
+    [spawn(?MODULE,spawn_test,[self(),User])|| _<-lists:seq(0, RequestCount)],
+    List=get_send_results(RequestCount,0),
+    
+    ToCompare=lists:any(fun(Elem)->Elem=:=too_many_requests_to_user end, List),
+    ?assertEqual(true,ToCompare).
+
+spawn_test(Pid,User)->
+    Pid ! ex_banking:get_balance(User, eur).
+get_send_results(MaxRequests,_Count)->
+    loop_results(MaxRequests,0,[]).
+
+loop_results(MaxCount,MaxCount,List)->List;
+loop_results(MaxCount,Count,List)->
+    receive 
+        Msg -> loop_results(MaxCount,Count+1,[Msg|List])
+    end.
 % can_withdraw(_Config)->
 %     {User,Currency,Coef}={adi,usd,0.75},
 %     ex_banking:add_currency(Currency,Coef),

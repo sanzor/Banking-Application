@@ -44,6 +44,7 @@ handle_call(Request,_From,State)->
     
 
 do_handle_call(get_balance,_From,State)->
+    timer:sleep(1000),
     {reply,{ok,State#state.balance},State};
 
 do_handle_call({deposit,Amount},_From,State)->
