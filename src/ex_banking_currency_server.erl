@@ -20,8 +20,8 @@ start_link()->
     gen_server:start_link({local,?NAME}, ?MODULE, [],[]).
 
 init(_Args)->
-  
-    {ok,#state{currencies=dict:store(eur, 1, dict:new())}}.
+    {ok,Value}=application:get_env(ex_banking, base_currency),
+    {ok,#state{currencies=dict:store(Value, 1, dict:new())}}.
 
 
 -spec get_coefficient(Currency)->{ok,{Currency, Coefficient::number()}} | currency_not_found |  {error , wrong_arguments} 

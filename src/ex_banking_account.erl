@@ -6,17 +6,22 @@
 
 -record(state,{
     id,
-    balance=0
+    balance=0,
+    max_requests,
+    throttle_milliseconds=0
 }).
 -define(NAME,?MODULE).
--define(MAX_REQUESTS,10).
 %%%--------------------------------- API 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 start_link(UserId)->
     gen_server:start_link(?NAME,[UserId], []).
 
 init([UserId])->
-    {ok,#state{id=UserId,balance=0}}.
+    {ok,Value}=application:get_env(ex_banking,max_requests),
+    %ok,ThrottleMilliseconds}=application:get_env(ex_banking,throttle_milliseconds),
+    %ct:log(ThrottleMilliseconds),
+    % {ok,#state{id=UserId,balance=0,max_requests=Value,throttle_milliseconds=ThrottleMilliseconds}}.
+    {ok,#state{id=UserId,balance=0,max_requests=Value}}.
 
 deposit(Pid,Amount)->
     gen_server:call(Pid,{deposit,Amount}).
@@ -39,12 +44,13 @@ handle_info(_Message,State)->
 
 handle_call(Request,_From,State)->
     ok=check_capacity(State),
+    %throttle(State#state.throttle_milliseconds),
     Result=do_handle_call(Request, _From, State),
     Result.
     
 
 do_handle_call(get_balance,_From,State)->
-    timer:sleep(1000),
+     
     {reply,{ok,State#state.balance},State};
 
 do_handle_call({deposit,Amount},_From,State)->
@@ -61,10 +67,17 @@ do_handle_call({withdraw,Amount},_From,State)->
     
 check_capacity(State)->
     [{_,Size}]=process_info(self(),[message_queue_len]),
-    case Size > ?MAX_REQUESTS of
+    case Size > State#state.max_requests of
         true ->  throw({reply,too_many_requests_to_user,State});
         false -> ok
     end.
+
+throttle(MillisecondsInterval) when is_integer(MillisecondsInterval) andalso MillisecondsInterval>0->
+    timer:sleep(MillisecondsInterval);
+
+throttle(_)->ok.
+
+
 
 
 
