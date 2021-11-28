@@ -17,15 +17,15 @@ start_link()->
 init(CounterRef)->
     {ok,#state{counter_Ref=CounterRef}}.
 create_user(Pid,User)->
-    gen_server:call(Pid,{undefined,{create_user,User}}).
+    gen_server:call(Pid,{create_user,User}).
 get_balance(Pid,{User,Currency})->
     gen_server:call(Pid,{Currency,{get_balance,User}}).
 deposit(Pid,{User,Amount,Currency})->
-    gen_server:call(Pid,{deposit,{User,Amount,Currency}}).
+    gen_server:call(Pid,{Currency,{deposit,{User,Amount}}}).
 withdraw(Pid,{User,Amount,Currency})->
-  gen_server:call(Pid,{withdraw,{User,Amount,Currency}}).
+  gen_server:call(Pid,{Currency,{withdraw,{User,Amount}}}).
 send(Pid,{From_User,To_User,Amount,Currency})->
-    gen_server:call(Pid,{send,{From_User,To_User,Amount,Currency}}).
+    gen_server:call(Pid,{Currency,{send,{From_User,To_User,Amount}}}).
 
 
 send_result(Pid,Message)->
@@ -34,42 +34,43 @@ send_result(Pid,Message)->
 %%%%%%%%%%%%%%%%%%%% Handlers %%%%%%%%%%%%
 handle_cast(_Request,State)->{noreply,State}.
 
+handle_call({create_user,UserId}, _From, State)->
+    ok=do_create_user(UserId, State),
+    {stop,normal,ok,State};
 
 handle_call({Currency,Request},From,State)->
     {ok,Coefficient}=can_get_coefficient(Currency, State),
      do_call(Coefficient,Request,From,State).
 
-do_call(undefined,{create_user,UserId},_From,State)->
-    ok=do_create_user(UserId, State),
-    {stop,normal,ok,State};
+
 
 do_call(Coefficient,{get_balance,UserId},_From,State)->
     {ok,User}=get_user(UserId,State),
     Reply=case ex_banking_account:get_balance(User#user.pid) of
-            {ok,Balance}->{ok,Balance/Coefficient};
+            {ok,BalanceInBaseCurrency}->{ok,BalanceInBaseCurrency/Coefficient};
              Error -> Error
           end,
     {reply,Reply,State};
         
 
-do_call(Coefficient,{deposit,{UserId,Amount,Currency}},_From,State)->
+do_call(Coefficient,{deposit,{UserId,Amount}},_From,State)->
     {ok,User}=get_user(UserId,State),
     Reply=case ex_banking_account:deposit(User#user.pid,Amount*Coefficient) of
-            {ok,Balance}->Balance/Coefficient;
+            {ok,BalanceInBaseCurrency}->{ok,BalanceInBaseCurrency/Coefficient};
              Error -> Error
           end,
     {reply,Reply,State};
 
     
-do_call(Coefficient,{withdraw,{UserId,Amount,Currency}},_From,State)->
+do_call(Coefficient,{withdraw,{UserId,Amount}},_From,State)->
     {ok,User}=get_user(UserId,State),
     Reply=case ex_banking_account:withdraw(User#user.pid,Amount*Coefficient) of
-            {ok,Balance}->Balance/Coefficient;
+            {ok,BalanceInBaseCurrency}->{ok,BalanceInBaseCurrency/Coefficient};
              Error -> Error
           end,
     {reply,Reply,State};
 
-do_call(Coefficient,{send,{From_User_Id,To_User_Id,Amount,Currency}},_From,State)->
+do_call(Coefficient,{send,{From_User_Id,To_User_Id,Amount}},_From,State)->
     {ok,From_User,To_User}=get_sender_and_receiver(From_User_Id, To_User_Id, State),
     {ok,From_User_Balance,To_User_Balance}=handle_send(From_User#user.pid, To_User#user.pid, Amount*Coefficient, State),
     {stop,normal,{ok,From_User_Balance/Coefficient,To_User_Balance/Coefficient},State}.
@@ -79,7 +80,7 @@ do_call(Coefficient,{send,{From_User_Id,To_User_Id,Amount,Currency}},_From,State
 can_get_coefficient(Currency,State)->
     case ex_banking_currency_server:get_coefficient(Currency) of
         {ok,Coefficient} -> {ok, Coefficient};
-        _ -> throw({stop,normal,wrong_arguments,State})
+        _ -> throw({stop,normal,{error,wrong_arguments,Currency},State})
     end.
 get_user(UserId,State)->
     case ex_banking_account_map:get_user(UserId) of
@@ -105,9 +106,9 @@ handle_send(From_User_Pid,To_User_Pid,Amount,State)->
 handle_withdraw_result(too_many_requests_to_user,_,_,State)->throw({stop,normal,too_many_requests_to_sender,State});
 handle_withdraw_result(not_enough_money,_,_,State)->throw({stop,normal,not_enough_money,State});
 
-handle_withdraw_result({ok,FromNewBalance},To_Pid,Amount,State)->
+handle_withdraw_result({ok,From_NewBalanceInBaseCurrency},To_Pid,Amount,State)->
     case ex_banking_account:deposit(To_Pid, Amount) of
-        {ok,ToNewBalance} -> {ok,FromNewBalance,ToNewBalance};
+        {ok,To_NewBalanceInBaseCurrency} -> {ok,From_NewBalanceInBaseCurrency,To_NewBalanceInBaseCurrency};
         too_many_requests_to_user -> throw({stop,normal,too_many_requests_to_receiver,State})
     end.
 

@@ -7,7 +7,9 @@
    [kernel,
     stdlib
    ]},
-  {env,[]},
+  {env,[
+      {base_currency,eur}
+    ]},
   {modules, [ex_banking,
              ex_banking_sup,
              ex_banking_currency_server,

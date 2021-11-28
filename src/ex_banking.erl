@@ -46,6 +46,7 @@ get_balance(User,Currency)->
                                        too_many_requests_to_user.
 deposit(_User,Amount,Currency) when 
                 not is_number(Amount) or 
+                (is_number(Amount) andalso Amount<0) or
                 not (is_atom(Currency) or is_list(Currency))->{error,wrong_arguments};
 
 
@@ -92,8 +93,8 @@ send(From_User,To_User,Amount,Currency)->
 test(_User)->
     {ok,{added,eur}}=ex_banking:add_currency(eur,1),
     ok=ex_banking:create_user(adi),
-    {ok,Balance}=ex_banking:get_balance(adi,eur),
-     Balance.
+    {ok,_}=ex_banking:get_balance(adi,eur),
+    ex_banking:deposit(_User, 100.0,eur).
     % try
     %     ex_banking:deposit(_User, 100, eur)
     % catch

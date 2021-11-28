@@ -43,7 +43,7 @@ handle_call(Request,_From,State)->
     Result.
     
 
-do_handle_call(get_balance,From,State)->
+do_handle_call(get_balance,_From,State)->
     {reply,{ok,State#state.balance},State};
 
 do_handle_call({deposit,Amount},_From,State)->
