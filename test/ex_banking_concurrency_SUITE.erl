@@ -41,23 +41,15 @@ all()->[can_limit_requests_to_user].
 
 can_limit_requests_to_user(_Config)->
     
-    {User,DepositAmount,RequestCount}={adi,100,12},
+    {User,DepositAmount,RequestCount}={adi,100,1000},
     ok=ex_banking:create_user(User),
     ex_banking:deposit(User, DepositAmount, eur),
     [spawn(?MODULE,spawn_test,[self(),User])|| _<-lists:seq(0, RequestCount)],
-    List=get_send_results(RequestCount,0),
+    List=[receive Msg -> Msg end || _<-lists:seq(0, RequestCount)],
     ct:log(List),
     
-    ToCompare=lists:any(fun(Elem)->Elem=:=too_many_requests_to_user end, List),
-    ?assertEqual(true,ToCompare).
+    DidAnyRequestFail=lists:any(fun(Elem)->Elem=:=too_many_requests_to_user end, List),
+    ?assertEqual(true,DidAnyRequestFail).
 
 spawn_test(Pid,User)->
     Pid ! ex_banking:get_balance(User, eur).
-get_send_results(MaxRequests,_Count)->
-    loop_results(MaxRequests,0,[]).
-
-loop_results(MaxCount,MaxCount,List)->List;
-loop_results(MaxCount,Count,List)->
-    receive 
-        Msg -> loop_results(MaxCount,Count+1,[Msg|List])
-    end.
