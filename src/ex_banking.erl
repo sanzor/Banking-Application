@@ -115,6 +115,18 @@ remove_currency(Currency)->
 update_currency(Currency,Coefficient)->
     ex_banking_currency_server:update_currency(Currency, Coefficient).
 
+start(normal,StartArgs)->
+    io:format("Starting normal"),
+    ex_banking_sup:start_link();
+
+start({takeover,Node},StartArgs)->
+    io:format("Starting with takeover on Node:~p",[Node]),
+    ex_banking_sup:start_link();
+
+start({failover,Node},StartArgs)->
+    io:format("Starting with failover on Node:~p",[Node]),
+    ex_banking_sup:start_link();
+
 start(_StartType, _StartArgs) ->
     ex_banking_sup:start_link().
 

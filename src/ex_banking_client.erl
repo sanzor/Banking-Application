@@ -23,11 +23,9 @@ get_balance(Pid,{User,Currency})->
 deposit(Pid,{User,Amount,Currency})->
     gen_server:call(Pid,{Currency,{deposit,{User,Amount}}}).
 withdraw(Pid,{User,Amount,Currency})->
-  gen_server:call(Pid,{Currency,{withdraw,{User,Amount}}}).
+    gen_server:call(Pid,{Currency,{withdraw,{User,Amount}}}).
 send(Pid,{From_User,To_User,Amount,Currency})->
     gen_server:call(Pid,{Currency,{send,{From_User,To_User,Amount}}}).
-
-
 send_result(Pid,Message)->
     gen_server:reply(Pid,Message).
 
