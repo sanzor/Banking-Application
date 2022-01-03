@@ -8,7 +8,6 @@
 -behaviour(application).
 
 -export([start/2, stop/1]).
--export([test/1]).
 -export([create_user/1,deposit/3,withdraw/3,get_balance/2,send/4]).
 -export([get_currency/1,add_currency/2,remove_currency/1,update_currency/2]).
 
@@ -90,17 +89,6 @@ send(From_User,To_User,Amount,Currency)->
     Result=ex_banking_client:send(Pid,{From_User,To_User,Amount,Currency}),
     Result.
 
-test(_User)->
-    {ok,{added,eur}}=ex_banking:add_currency(eur,1),
-    ok=ex_banking:create_user(adi),
-    {ok,_}=ex_banking:get_balance(adi,eur),
-    ex_banking:deposit(_User, 100.0,eur).
-    % try
-    %     ex_banking:deposit(_User, 100, eur)
-    % catch
-    %     Err ->Err
-    % end.
-
 %----------------------------------------------------------------------------------
 %--------------------Currency API-------------------------------------------------
 %----------------------------------------------------------------------------------
@@ -115,10 +103,26 @@ remove_currency(Currency)->
 update_currency(Currency,Coefficient)->
     ex_banking_currency_server:update_currency(Currency, Coefficient).
 
-start(_StartType, _StartArgs) ->
-    ex_banking_sup:start_link().
 
+
+
+   
+start({takeover,Node},Args)->
+    io:format("taking over to node ~p",[Node]),
+    ex_banking_sup:start_link();
+start(_StartType, _StartArgs) ->
+    
+    connect_to_cluster(),
+    io:format("starting normal"),
+    ex_banking_sup:start_link().
 stop(_State) ->
     ok.
 
+get_nodes()->
+    io:format("~p",[application:get_all_env(kernel)]),
+    Value=application:get_env(kernel),
+    io:format("~p",[Value]),
+    ok.
+connect_to_cluster()->
+    get_nodes().
 %% internal functions
