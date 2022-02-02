@@ -22,7 +22,6 @@
              ex_banking_account_sup,
              ex_banking_account_map
              ]},
-
   {licenses, ["Apache 2.0"]},
   {links, []}
  ]}.
