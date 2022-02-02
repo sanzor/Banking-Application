@@ -110,10 +110,7 @@ update_currency(Currency,Coefficient)->
 start({takeover,Node},Args)->
     io:format("taking over to node ~p",[Node]),
     ex_banking_sup:start_link();
-start(_StartType, _StartArgs) ->
-    
-    connect_to_cluster(),
-    io:format("starting normal"),
+start(_StartType, _StartArgs)->
     ex_banking_sup:start_link().
 stop(_State) ->
     ok.
@@ -122,7 +119,19 @@ get_nodes()->
     io:format("~p",[application:get_all_env(kernel)]),
     Value=application:get_env(kernel),
     io:format("~p",[Value]),
-    ok.
+    Nodes=[{'a@DESKTOP-GOMS8S8',primary},{'b@DESKTOP-GOMS8S8',secondary}],
+    Nodes.
 connect_to_cluster()->
-    get_nodes().
+     Nodes=get_nodes(),
+     Targets=lists:filter(fun({Name,Importance})->Name =/=node() andalso Importance=:=primary  end, Nodes),
+     io:format("~p",[Targets]),
+     ping_nodes(Targets).
+     
+
+ping_nodes(List)->
+    Results=[net_adm:ping(Name)||{Name,IsPrimary}<-List],
+    case lists:any(fun(Elem)->Elem =/= pong end ,Results) of
+            true -> throw({error,connect_to_nodes});
+            false-> ok
+    end.
 %% internal functions

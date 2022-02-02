@@ -10,7 +10,8 @@
   {env,[
       {base_currency,eur},
       {max_requests,10},
-      {throttle_milliseconds,0}
+      {throttle_milliseconds,0},
+      {port,7000}
     ]},
   {modules, [ex_banking,
              ex_banking_sup,
