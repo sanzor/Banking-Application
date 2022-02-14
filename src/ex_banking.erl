@@ -10,7 +10,7 @@
 -export([start/2, stop/1]).
 -export([create_user/1,deposit/3,withdraw/3,get_balance/2,send/4]).
 -export([get_currency/1,add_currency/2,remove_currency/1,update_currency/2]).
-
+-define(FU(K,V),proplists:get_value(K, V)).
 
 %----------------------------------------------------------------------------------
 %--------------------Banking  API--------------------------------------------------
@@ -108,28 +108,32 @@ update_currency(Currency,Coefficient)->
 
    
 start({takeover,Node},Args)->
+    
     io:format("taking over to node ~p",[Node]),
     ex_banking_sup:start_link();
 start(_StartType, _StartArgs)->
+    connect_to_cluster(),
     ex_banking_sup:start_link().
 stop(_State) ->
     ok.
 
 get_nodes()->
-    io:format("~p",[application:get_all_env(kernel)]),
-    Value=application:get_env(kernel),
-    io:format("~p",[Value]),
-    Nodes=[{'a@DESKTOP-GOMS8S8',primary},{'b@DESKTOP-GOMS8S8',secondary}],
-    Nodes.
+    {ok,Env}=application:get_env(kernel,distributed),
+    AllNodes=proplists:get_value(ex_banking, Env),
+    MandatoryNodes=proplists:get_value(sync_nodes_mandatory,Env),
+    {ok,{AllNodes,MandatoryNodes}}.
+    
 connect_to_cluster()->
-     Nodes=get_nodes(),
-     Targets=lists:filter(fun({Name,Importance})->Name =/=node() andalso Importance=:=primary  end, Nodes),
-     io:format("~p",[Targets]),
-     ping_nodes(Targets).
+     {ok,{AllNodes,MandatoryNodes}}=get_nodes(),
+     ping_nodes(MandatoryNodes),
+     io:format("All: ~p   Mandatory:~n~p",[AllNodes,MandatoryNodes]).
+    %  Targets=lists:filter(fun({Name,Importance})->Name =/=node() andalso Importance=:=primary  end, Nodes),
+    %  io:format("~p",[Targets]),
+    %  ping_nodes(Targets).
      
 
 ping_nodes(List)->
-    Results=[net_adm:ping(Name)||{Name,IsPrimary}<-List],
+    Results=[net_adm:ping(Name)||{Name,IsPrimary}<-List, Name=/=node()],
     case lists:any(fun(Elem)->Elem =/= pong end ,Results) of
             true -> throw({error,connect_to_nodes});
             false-> ok

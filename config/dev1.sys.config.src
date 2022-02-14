@@ -3,6 +3,7 @@
         {port,${PORT}}
         ]
     },
+    {sgp,[{axa,33}]},
     {kernel,
         [
             {distributed,[
@@ -13,4 +14,4 @@
             ]}
         ]
         }
-].
+  ].
