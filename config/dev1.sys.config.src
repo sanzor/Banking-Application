@@ -3,12 +3,11 @@
         {port,${PORT}}
         ]
     },
-    {sgp,[{axa,33}]},
     {kernel,
         [
             {distributed,[
                 {ex_banking,['a@DESKTOP-GOMS8S8','b@DESKTOP-GOMS8S8']},
-                {sync_nodes_mandatory,[]},
+                {sync_nodes_mandatory,['b@DESKTOP-GOMS8S8']},
                 {sync_nodes_optional,[]},
                 {sync_nodes_timeout,3000}
             ]}

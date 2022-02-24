@@ -112,6 +112,7 @@ start({takeover,Node},Args)->
     io:format("taking over to node ~p",[Node]),
     ex_banking_sup:start_link();
 start(_StartType, _StartArgs)->
+    io:format("Starting non-distributed"),
     connect_to_cluster(),
     ex_banking_sup:start_link().
 stop(_State) ->
@@ -133,7 +134,7 @@ connect_to_cluster()->
      
 
 ping_nodes(List)->
-    Results=[net_adm:ping(Name)||{Name,IsPrimary}<-List, Name=/=node()],
+    Results=[net_adm:ping(Name)||Name<-List],
     case lists:any(fun(Elem)->Elem =/= pong end ,Results) of
             true -> throw({error,connect_to_nodes});
             false-> ok
