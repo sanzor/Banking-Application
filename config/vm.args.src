@@ -1,5 +1,4 @@
-% node
+#node
 -name ${NODE_NAME}
-% cookie
-
+#port
 -port ${PORT}
