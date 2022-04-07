@@ -24,7 +24,7 @@ init(_Args)->
     {ok,#state{currencies=dict:store(Value, 1, dict:new())}}.
 
 
--spec get_coefficient(Currency)->{ok,{Currency, Coefficient::number()}} | currency_not_found |  {error , wrong_arguments} 
+-spec get_coefficient(Currency)->{ok,Coefficient::number()} | currency_not_found |  {error , wrong_arguments}
                                     when Currency:: list() | atom().
 get_coefficient(Currency) when not is_list(Currency) , not is_atom(Currency)->
     {error,invalid_arguments};
@@ -68,7 +68,7 @@ update_currency(Currency,Coefficient)->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         Handlers    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 handle_cast(stop,State)->
-    {stop,State}.
+    {stop,normal,State}.
 handle_call({get_currency,Currency},_From,State)->
     Reply=case dict:find(Currency, State#state.currencies) of
             error ->currency_does_not_exist;
@@ -85,7 +85,7 @@ handle_call({add_currency,Currency,Coefficient},_From,State)->
     
 
 handle_call({remove_currency,Currency},_From,State)->
-    NewDict=dict:erase(Currency, State),
+    NewDict=dict:erase(Currency, State#state.currencies),
     {reply,{ok,{removed,Currency}},State#state{currencies=NewDict}};
 
 
@@ -95,4 +95,3 @@ handle_call({update_currency,Currency,Coefficient},_From,State)->
                 {ok,_}-> NewDict=dict:store(Currency, Coefficient,State#state.currencies),
                          {reply,{ok,{updated,Currency}},State#state{currencies=NewDict}}
     end.
-   
