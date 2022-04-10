@@ -104,25 +104,18 @@ update_currency(Currency,Coefficient)->
     ex_banking_currency_server:update_currency(Currency, Coefficient).
 
 
-
-
    
 start({takeover,Node},Args)->
-    
     io:format("taking over to node ~p",[Node]),
     ex_banking_sup:start_link();
 start(_StartType, _StartArgs)->
     io:format("Starting non-distributed"),
     connect_to_cluster(),
-    ex_banking_sup:start_link().
+    {ok,Pid}=ex_banking_sup:start_link(),
+    {ok,Pid}.
 stop(_State) ->
     ok.
 
-get_nodes()->
-    {ok,Env}=application:get_env(kernel,distributed),
-    AllNodes=proplists:get_value(ex_banking, Env),
-    MandatoryNodes=proplists:get_value(sync_nodes_mandatory,Env),
-    {ok,{AllNodes,MandatoryNodes}}.
     
 connect_to_cluster()->
      {ok,{AllNodes,MandatoryNodes}}=get_nodes(),
@@ -131,7 +124,15 @@ connect_to_cluster()->
     %  Targets=lists:filter(fun({Name,Importance})->Name =/=node() andalso Importance=:=primary  end, Nodes),
     %  io:format("~p",[Targets]),
     %  ping_nodes(Targets).
-     
+    % 
+get_nodes()->
+        Env=application:get_env(kernel,distributed),
+        io:format("~p",[Env]),
+        % AllNodes=proplists:get_value(ex_banking, Env),
+        % MandatoryNodes=proplists:get_value(sync_nodes_mandatory,Env),
+        % {ok,{AllNodes,MandatoryNodes}}
+        {ok,{[],[]}}.
+    
 
 ping_nodes(List)->
     Results=[net_adm:ping(Name)||Name<-List],
