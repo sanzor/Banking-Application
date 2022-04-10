@@ -1,4 +1,0 @@
-#node
--name ${NODE_NAME}
-#port
--port ${PORT}
