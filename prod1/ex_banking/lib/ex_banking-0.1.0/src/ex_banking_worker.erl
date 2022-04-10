@@ -1,4 +1,4 @@
--module(ex_banking_client).
+-module(ex_banking_worker).
 -behaviour(gen_server).
 -include("records.hrl").
 -export([create_user/2,get_balance/2,deposit/2,withdraw/2,send/2]).

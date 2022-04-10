@@ -16,8 +16,8 @@
   {modules, [ex_banking,
              ex_banking_sup,
              ex_banking_currency_server,
-             ex_banking_client,
-             ex_banking_client_sup,
+             ex_banking_worker,
+             ex_banking_worker_sup,
              ex_banking_account,
              ex_banking_account_sup,
              ex_banking_account_map

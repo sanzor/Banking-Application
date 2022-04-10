@@ -3,7 +3,7 @@
 %% @end
 %%%-------------------------------------------------------------------
 
--module(ex_banking_sup).
+-module(ex_banking_main_sup).
 
 -behaviour(supervisor).
 
@@ -56,12 +56,12 @@ init([]) ->
         mod=>[ex_banking_account_worker_sup]
     },
     #{
-        id=>ex_banking_client_sup,
-        start=>{ex_banking_client_sup,start_link,[]},
+        id=>ex_banking_worker_sup,
+        start=>{ex_banking_worker_sup,start_link,[]},
         restart=>permanent,
         shutdown=>brutal_kill,
         type=>supervisor,
-        mod=>[ex_banking_client_worker_sup]
+        mod=>[ex_banking_worker_sup]
     }],
     {ok, {SupFlags, ChildSpecs}}.
 

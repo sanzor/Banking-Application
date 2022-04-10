@@ -4,13 +4,12 @@
 %%%-------------------------------------------------------------------
 
 -module(ex_banking).
-
 -behaviour(application).
 
 -export([start/2, stop/1]).
 -export([create_user/1,deposit/3,withdraw/3,get_balance/2,send/4]).
 -export([get_currency/1,add_currency/2,remove_currency/1,update_currency/2]).
--define(FU(K,V),proplists:get_value(K, V)).
+-define(FU(Key,List),proplists:get_value(Key, List)).
 
 %----------------------------------------------------------------------------------
 %--------------------Banking  API--------------------------------------------------
@@ -19,8 +18,8 @@
 -spec create_user(User :: string())-> ok | {error, wrong_arguments} | user_already_exists.
 create_user(User) when not is_list(User) , not is_atom(User)->{error,wrong_arguments};
 create_user(User)->
-    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
-    Result= ex_banking_client:create_user(Pid, User),
+    {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
+    Result= ex_banking_worker:create_user(Pid, User),
     Result.
            
 
@@ -30,8 +29,8 @@ create_user(User)->
                   -> {ok, Balance::number()} | {error, wrong_arguments }| 
                         user_does_not_exist | too_many_requests_to_user.
 get_balance(User,Currency)->
-    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
-    {ok,Balance}= ex_banking_client:get_balance(Pid,{User,Currency}),
+    {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
+    {ok,Balance}= ex_banking_worker:get_balance(Pid,{User,Currency}),
     {ok,Balance}.
             
 
@@ -50,8 +49,8 @@ deposit(_User,Amount,Currency) when
 
 
 deposit(User,Amount,Currency)->
-    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
-    Result= ex_banking_client:deposit(Pid, {User,Amount,Currency}),
+    {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
+    Result= ex_banking_worker:deposit(Pid, {User,Amount,Currency}),
     Result.
            
 
@@ -69,8 +68,8 @@ withdraw(_User,Amount,Currency) when
                             not (is_atom(Currency) or is_list(Currency))->{error,wrong_arguments};
                     
 withdraw(User,Amount,Currency)->
-    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
-    Result=ex_banking_client:withdraw(Pid,{User,Amount,Currency}),
+    {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
+    Result=ex_banking_worker:withdraw(Pid,{User,Amount,Currency}),
     Result.
             
 
@@ -85,8 +84,8 @@ send(_From_User,_To_User,Amount,Currency) when
                 not (is_atom(Currency) or is_list(Currency))->{error,wrong_arguments};
             
 send(From_User,To_User,Amount,Currency)->
-    {ok,Pid}=ex_banking_client_sup:fetch_worker(),
-    Result=ex_banking_client:send(Pid,{From_User,To_User,Amount,Currency}),
+    {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
+    Result=ex_banking_worker:send(Pid,{From_User,To_User,Amount,Currency}),
     Result.
 
 %----------------------------------------------------------------------------------
@@ -107,32 +106,37 @@ update_currency(Currency,Coefficient)->
    
 start({takeover,Node},Args)->
     io:format("taking over to node ~p",[Node]),
-    ex_banking_sup:start_link();
+    ex_banking_main_sup:start_link();
 start(_StartType, _StartArgs)->
-    io:format("Starting non-distributed"),
+    io:format("\nStarting non-distributed\n"),
     connect_to_cluster(),
-    {ok,Pid}=ex_banking_sup:start_link(),
+    {ok,Pid}=ex_banking_main_sup:start_link(),
     {ok,Pid}.
 stop(_State) ->
     ok.
 
     
 connect_to_cluster()->
-     {ok,{AllNodes,MandatoryNodes}}=get_nodes(),
-     ping_nodes(MandatoryNodes),
-     io:format("All: ~p   Mandatory:~n~p",[AllNodes,MandatoryNodes]).
+     {ok,{All,Mandatory}}=get_nodes(),
+     ping_nodes(Mandatory).
+     
     %  Targets=lists:filter(fun({Name,Importance})->Name =/=node() andalso Importance=:=primary  end, Nodes),
     %  io:format("~p",[Targets]),
     %  ping_nodes(Targets).
     % 
 get_nodes()->
-        Env=application:get_env(kernel,distributed),
-        io:format("~p",[Env]),
-        % AllNodes=proplists:get_value(ex_banking, Env),
-        % MandatoryNodes=proplists:get_value(sync_nodes_mandatory,Env),
+        io:format("~p",[node()]),
+        {ok,Env}=application:get_env(kernel,distributed),
+        io:format("\nEnv:\n~p\n",[Env]),
+        All=?FU(ex_banking,Env),
+        io:format("\nNodes:\n ~p\n",[All]),
+        Mandatory=?FU(sync_nodes_mandatory,Env),
+        io:format("\nMandatory:\n ~p\n",[Mandatory]),
         % {ok,{AllNodes,MandatoryNodes}}
-        {ok,{[],[]}}.
-    
+        %ToPing=lists:filter(fun(Elem)->Elem =/= node() end, All),
+        %io:format("\nToPing:\n ~p\n",[ToPing]),
+        {ok,{[],Mandatory}}.
+       
 
 ping_nodes(List)->
     Results=[net_adm:ping(Name)||Name<-List],

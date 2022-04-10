@@ -125,7 +125,7 @@ connect_to_cluster()->
     %  ping_nodes(Targets).
     % 
 get_nodes()->
-    
+        io:format("~p",[node()]),
         {ok,Env}=application:get_env(kernel,distributed),
         io:format("\nEnv:\n~p\n",[Env]),
         All=?FU(ex_banking,Env),
@@ -133,9 +133,9 @@ get_nodes()->
         Mandatory=?FU(sync_nodes_mandatory,Env),
         io:format("\nMandatory:\n ~p\n",[Mandatory]),
         % {ok,{AllNodes,MandatoryNodes}}
-        ToPing=lists:filter(fun(Elem)->Elem =/= node() end, All),
-        io:format("\nToPing:\n ~p\n",[ToPing]),
-        {ok,{ToPing,Mandatory}}.
+        %ToPing=lists:filter(fun(Elem)->Elem =/= node() end, All),
+        %io:format("\nToPing:\n ~p\n",[ToPing]),
+        {ok,{[],Mandatory}}.
        
 
 ping_nodes(List)->
