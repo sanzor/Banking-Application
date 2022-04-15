@@ -128,15 +128,13 @@ get_nodes()->
         io:format("~p",[node()]),
         {ok,Env}=application:get_env(kernel,distributed),
         io:format("\nEnv:\n~p\n",[Env]),
-        All=?FU(ex_banking,Env),
-        io:format("\nNodes:\n ~p\n",[All]),
+        AllNodes=?FU(ex_banking,Env),
+        io:format("\nNodes:\n ~p\n",[AllNodes]),
         Mandatory=?FU(sync_nodes_mandatory,Env),
         io:format("\nMandatory:\n ~p\n",[Mandatory]),
-        % {ok,{AllNodes,MandatoryNodes}}
-        %ToPing=lists:filter(fun(Elem)->Elem =/= node() end, All),
-        %io:format("\nToPing:\n ~p\n",[ToPing]),
-        {ok,{[],Mandatory}}.
-       
+        ToPingNodes=lists:filter(fun(Elem)->Elem =/= node() end, AllNodes),
+        io:format("\nToPing:\n ~p\n",[ToPingNodes]),
+        {ok,{AllNodes,ToPingNodes}}.
 
 ping_nodes(List)->
     Results=[net_adm:ping(Name)||Name<-List],
