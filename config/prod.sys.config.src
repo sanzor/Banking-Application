@@ -1,8 +1,4 @@
 [
-    {ex_banking,[
-        {port,${PORT}}
-        ]
-    },
     {kernel,
         [
             {distributed,[
@@ -11,6 +7,11 @@
                 {sync_nodes_optional,[]},
                 {sync_nodes_timeout,3000}
             ]}
+        ]
+    },
+    {ex_banking,[
+        {port,${PORT}},
+        {xx,${XX}}
         ]
     }
 ].

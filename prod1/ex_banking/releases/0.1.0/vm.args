@@ -1,0 +1,7 @@
+#node
+-name  a@DESKTOP-GOMS8S8
+#port
+-port 8300
+
+#xx
+-xx 33
