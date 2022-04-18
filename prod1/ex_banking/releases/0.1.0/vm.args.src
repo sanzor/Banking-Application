@@ -1,7 +1,7 @@
 #node
--name ${NODE_NAME}
+-name  ${NODE_NAME}
 #port
--port ${PORT}
+-ex_banking port ${PORT}
 
 #xx
--xx ${XX}
+-ex_banking xx ${XX}

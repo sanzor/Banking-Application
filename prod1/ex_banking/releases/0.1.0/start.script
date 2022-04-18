@@ -161,7 +161,7 @@
                         {max_requests,10},
                         {throttle_milliseconds,0},
                         {port,7000},
-                        {xx,32}]},
+                        {xx,10}]},
                    {maxT,infinity},
                    {maxP,infinity},
                    {mod,{ex_banking,[]}}]}]}},

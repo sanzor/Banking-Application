@@ -103,48 +103,11 @@ update_currency(Currency,Coefficient)->
     ex_banking_currency_server:update_currency(Currency, Coefficient).
 
 
-   
-start({takeover,Node},Args)->
-    io:format("taking over to node ~p",[Node]),
-    ex_banking_main_sup:start_link();
 start(_StartType, _StartArgs)->
-    io:format("\nStarting non-distributed\n"),
-    connect_to_cluster(),
     {ok,Pid}=ex_banking_main_sup:start_link(),
     {ok,Pid}.
 stop(_State) ->
     ok.
-
-    
-connect_to_cluster()->
-     {ok,{All,Mandatory}}=get_nodes(),
-     io:format("\nPinging nodes...\n"),
-     ping_nodes(Mandatory).
-     
-    %  Targets=lists:filter(fun({Name,Importance})->Name =/=node() andalso Importance=:=primary  end, Nodes),
-    %  io:format("~p",[Targets]),
-    %  ping_nodes(Targets).
-    % 
-get_nodes()->
-        io:format("\nFetching nodes to connect\n"),
-        Env=application:get_all_env(ex_banking),
-        io:format("\nFetching all env: ~p\n",[Env]),
-        Dv=application:get_env(kernel,distributed),
-        io:format("\nDistributed Env:\n~p\n",[Dv]),
-        % AllNodes=?FU(ex_banking,Denv),
-        % io:format("\nNodes:\n ~p\n",[AllNodes]),
-        % Mandatory=?FU(sync_nodes_mandatory,Denv),
-        % io:format("\nMandatory:\n ~p\n",[Mandatory]),
-        % ToPingNodes=lists:filter(fun(Elem)->Elem =/= node() end, AllNodes),
-        % io:format("\nToPing:\n ~p\n",[ToPingNodes]),
-        {ok,{[],[]}}.
-
-ping_nodes(List)->
-    Results=[net_adm:ping(Name)||Name<-List],
-    case lists:any(fun(Elem)->Elem =/= pong end ,Results) of
-            true -> throw({error,connect_to_nodes});
-            false-> ok
-    end.
 %% internal functions
 
 
