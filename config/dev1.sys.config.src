@@ -1,6 +1,7 @@
 [
     {ex_banking,[
-        {port,${PORT}}
+        {port,${PORT}},
+        {pp,${XX}}
         ]
     },
     {kernel,

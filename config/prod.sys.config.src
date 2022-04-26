@@ -1,4 +1,5 @@
 [
+    {crt,[{ct,${PORT}}]},
     {kernel,
         [
             {distributed,[
@@ -11,7 +12,7 @@
     },
     {ex_banking,[
         {port,${PORT}},
-        {xx,${XX}}
+        {xy,${XX}}
         ]
     }
 ].
