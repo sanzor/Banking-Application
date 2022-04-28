@@ -1,4 +1,4 @@
 #node
--name ${NODE_NAME}
+-name ex_banking ${NODE_NAME}
 #port
--port ${PORT}
+-ex_banking port ${PORT}
