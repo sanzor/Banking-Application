@@ -103,13 +103,16 @@ update_currency(Currency,Coefficient)->
     ex_banking_currency_server:update_currency(Currency, Coefficient).
 
 
-   
+
+start({failover,Node},Args)->
+        io:format("Failover  ~p",[Node]),
+        ex_banking_main_sup:start_link();   
 start({takeover,Node},Args)->
-    io:format("taking over to node ~p",[Node]),
+    io:format("Takeover ~p",[Node]),
     ex_banking_main_sup:start_link();
 start(_StartType, _StartArgs)->
     io:format("\nStarting non-distributed\n"),
-    connect_to_cluster(),
+    %connect_to_cluster(),
     {ok,Pid}=ex_banking_main_sup:start_link(),
     {ok,Pid}.
 stop(_State) ->

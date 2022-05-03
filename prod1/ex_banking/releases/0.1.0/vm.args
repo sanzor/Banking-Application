@@ -1,0 +1,4 @@
+#node
+-sname ${NODE_NAME}
+#port
+-ex_banking port ${PORT}
