@@ -111,8 +111,8 @@ start({takeover,Node},Args)->
     io:format("Takeover ~p",[Node]),
     ex_banking_main_sup:start_link();
 start(_StartType, _StartArgs)->
-    io:format("\nStarting non-distributed\n"),
-    %connect_to_cluster(),
+    io:format("\nStarting normal\n"),
+    connect_to_cluster(),
     {ok,Pid}=ex_banking_main_sup:start_link(),
     {ok,Pid}.
 stop(_State) ->
