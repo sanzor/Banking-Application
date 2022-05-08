@@ -1,0 +1,3 @@
+{release,{"start_clean","1.0"},
+         {erts,"10.6.4"},
+         [{kernel,"6.5.1"},{stdlib,"3.11.2"},{ex_banking,"0.1.0",none}]}. 
