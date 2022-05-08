@@ -1,5 +1,5 @@
 %% coding: utf-8
-%% script generated at {2022,5,8} {21,36,23}
+%% script generated at {2022,5,8} {22,22,4}
 {script,
     {"ex_banking","0.1.0"},
     [{preLoaded,

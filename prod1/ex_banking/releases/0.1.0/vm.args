@@ -1,4 +1,4 @@
 #node
--sname "a@DESKTOP-GOMS8S8"
+-name ${NODE_NAME}
 #port
--ex_banking port 8300
+-ex_banking port ${PORT}
