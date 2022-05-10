@@ -104,7 +104,7 @@ update_currency(Currency,Coefficient)->
 
 
 
-start({failover,Node},Args)->
+    start({failover,Node},Args)->
         io:format("Failover  ~p",[Node]),
         ex_banking_main_sup:start_link();   
 start({takeover,Node},Args)->
@@ -145,4 +145,3 @@ ping_nodes(List)->
             true -> throw({error,connect_to_nodes});
             false-> ok
     end.
-%% internal functions
