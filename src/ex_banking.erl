@@ -102,7 +102,11 @@ remove_currency(Currency)->
 update_currency(Currency,Coefficient)->
     ex_banking_currency_server:update_currency(Currency, Coefficient).
 
+start({takeover,TakeoverNode},_Args)->
+    io:format("Node takeover by : ~p",[TakeoverNode]);
 
+start({failover,FailoverNode},_Args)->
+    io:format("Node failover by : ~p",[FailoverNode]);
 start(_StartType, _StartArgs)->
     {ok,Pid}=ex_banking_main_sup:start_link(),
     {ok,Pid}.
