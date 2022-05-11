@@ -104,9 +104,9 @@ update_currency(Currency,Coefficient)->
 
 
 
-    start({failover,Node},Args)->
-        io:format("Failover  ~p",[Node]),
-        ex_banking_main_sup:start_link();   
+start({failover,Node},Args)->
+    io:format("Failover  ~p",[Node]),
+    ex_banking_main_sup:start_link();   
 start({takeover,Node},Args)->
     io:format("Takeover ~p",[Node]),
     ex_banking_main_sup:start_link();
