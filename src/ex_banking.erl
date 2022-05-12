@@ -112,7 +112,7 @@ start({takeover,Node},Args)->
     ex_banking_main_sup:start_link();
 start(_StartType, _StartArgs)->
     io:format("\nStarting normal\n"),
-    connect_to_cluster(),
+   % connect_to_cluster(),
     {ok,Pid}=ex_banking_main_sup:start_link(),
     {ok,Pid}.
 stop(_State) ->
@@ -130,16 +130,14 @@ connect_to_cluster()->
 get_nodes()->
         io:format("~p",[node()]),
         {ok,Env}=application:get_env(kernel,distributed),
-        io:format("\nEnv:\n~p\n",[Env]),
+        {ok,MandatoryNodes}=application:get_env(kernel,sync_nodes_mandatory),
+        io:format("\nAllNodesEnv:\n~p\n",[Env]),
+        io:format("\nMandatoryNodes:\n~p\n",[MandatoryNodes]),
         AllNodes=?FU(ex_banking,Env),
-        io:format("\nNodes:\n ~p\n",[AllNodes]),
-        Mandatory=?FU(sync_nodes_mandatory,Env),
-        io:format("\nMandatory:\n ~p\n",[Mandatory]),
-        ToPingNodes=lists:filter(fun(Elem)->Elem =/= node() end, AllNodes),
+        ToPingNodes=lists:filter(fun(Elem)->Elem =/= node() end,MandatoryNodes),
         io:format("\nToPing:\n ~p\n",[ToPingNodes]),
         {ok,{AllNodes,ToPingNodes}}.
-
-ping_nodes(List)->
+ping_nodes(List) when is_list(List)->
     Results=[net_adm:ping(Name)||Name<-List],
     case lists:any(fun(Elem)->Elem =/= pong end ,Results) of
             true -> throw({error,connect_to_nodes});
