@@ -1,4 +1,4 @@
 #node
--name 'a@DESKTOP-GOMS8S8'
+-name 'a@127.0.0.1'
 #port
 -ex_banking port 8300
