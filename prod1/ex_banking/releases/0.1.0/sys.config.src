@@ -8,7 +8,7 @@
             {distributed,[{ex_banking,['a@127.0.0.1','b@127.0.0.1','c@127.0.0.1']}]},
             {sync_nodes_mandatory,['b@127.0.0.1','c@127.0.0.1']},
             {sync_nodes_optional,[]},
-            {sync_nodes_timeout,10000}
+            {sync_nodes_timeout,30000}
         ]
     }
 ].
