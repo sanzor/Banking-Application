@@ -94,31 +94,31 @@ handle_cast(_Args,State)->
 
 handle_call({create_user,User},From,State)->
     {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
-     Result= ex_banking_worker:create_user(Pid, User),
+     Result= ex_banking_worker:fwd_create_user(Pid,From,User),
      gen_server:reply(From,Result),
      {noreply,State};
 
 handle_call({get_balance,{User,Currency}},From,State)->
     {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
-    {ok,Balance}= ex_banking_worker:get_balance(Pid,{User,Currency}),
+    {ok,Balance}= ex_banking_worker:fwd_get_balance(Pid,From,{User,Currency}),
     gen_server:reply(From,{ok,Balance}),
     {noreply,State};
 
 
 handle_call({deposit,{User,Amount,Currency}},From,State)->
     {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
-    {ok,NewBalance}= ex_banking_worker:deposit(Pid, {User,Amount,Currency}),
+    {ok,NewBalance}= ex_banking_worker:fwd_deposit(Pid,From,{User,Amount,Currency}),
     gen_server:reply(From,{ok,NewBalance}),
     {noreply,State};
 
 handle_call({withdraw,{User,Amount,Currency}},From,State)->
     {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
-    Result=ex_banking_worker:withdraw(Pid,{User,Amount,Currency}),
+    Result=ex_banking_worker:fwd_withdraw(Pid,From,{User,Amount,Currency}),
     gen_server:reply(From,Result),
     {noreply,State};
 
 handle_call({send,{From_User,To_User,Amount,Currency}},From,State)->
     {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
-    Result=ex_banking_worker:send(Pid,{From_User,To_User,Amount,Currency}),
+    Result=ex_banking_worker:fwd_send(Pid,From,{From_User,To_User,Amount,Currency}),
     gen_server:reply(From,Result),
     {noreply,State}.

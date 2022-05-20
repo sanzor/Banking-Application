@@ -13,9 +13,9 @@
       {throttle_milliseconds,0},
       {port,7000}
     ]},
-  {modules, [ex_banking_app,
-             ex_banking_api,
-             ex_banking_api,
+  {modules, [
+             ex_banking,
+             ex_banking_app,
              ex_banking_sup,
              ex_banking_currency_api,
              ex_banking_currency_server,
