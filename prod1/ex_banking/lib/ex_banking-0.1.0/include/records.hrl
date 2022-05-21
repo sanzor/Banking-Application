@@ -1,4 +1,0 @@
--record(user,{
-    ref,
-    pid
-}).
