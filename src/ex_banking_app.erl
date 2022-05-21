@@ -9,6 +9,10 @@
 
 -define(FU(Key,List),proplists:get_value(Key, List)).
 
+
+%%====================================================================
+%% API
+%%====================================================================
 start({failover,Node},Args)->
     io:format("Failover  ~p",[Node]),
     ex_banking_main_sup:start_link();   
