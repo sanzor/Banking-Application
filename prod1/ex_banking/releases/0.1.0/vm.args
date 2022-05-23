@@ -1,0 +1,7 @@
+#node
+-name  'a@DESKTOP-GOMS8S8'
+#port
+-ex_banking port 8300
+
+#xx
+-ex_banking xx 33

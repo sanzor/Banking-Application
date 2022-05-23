@@ -1,0 +1,3 @@
+application:get_all_env(kernel).
+application:get_env(kernel,distributed).
+application:get_all_env(ex_banking).
