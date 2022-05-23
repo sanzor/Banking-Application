@@ -1,14 +1,14 @@
 [
-    {kernel,
-        [
-            {distributed,[{ex_banking,['a@DESKTOP-GOMS8S8','b@DESKTOP-GOMS8S8']}]},
-            {sync_nodes_mandatory,['b@DESKTOP-GOMS8S8']},
-            {sync_nodes_optional,[]},
-            {sync_nodes_timeout,10000}
-        ]
-    },
     {ex_banking,[
         {port,${PORT}}
+        ]
+    },
+    {kernel,
+        [
+            {distributed,[{ex_banking,['a@127.0.0.1','b@127.0.0.1','c@127.0.0.1']}]},
+            {sync_nodes_mandatory,['b@127.0.0.1','c@127.0.0.1']},
+            {sync_nodes_optional,[]},
+            {sync_nodes_timeout,30000}
         ]
     }
 ].
