@@ -1,1 +1,8 @@
-[].
+[{<<"eredis">>,
+  {git,"https://github.com/Nordix/eredis.git",
+       {ref,"38f91e7017518b126eb4600bdf2ea172271362bc"}},
+  0},
+ {<<"rebar">>,
+  {git,"https://github.com/Nordix/eredis.git",
+       {ref,"38f91e7017518b126eb4600bdf2ea172271362bc"}},
+  0}].

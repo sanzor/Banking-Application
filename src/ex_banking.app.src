@@ -5,7 +5,8 @@
   {mod, {ex_banking_app, []}},
   {applications,
    [kernel,
-    stdlib
+    stdlib,
+    eredis
    ]},
   {env,[
       {base_currency,eur},

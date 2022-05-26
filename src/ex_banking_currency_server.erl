@@ -3,10 +3,9 @@
 -export([start_link/0,init/1]).
 -export([handle_call/3,handle_cast/2]).
 -export([get_coefficient/1,add_currency/2,remove_currency/1,update_currency/2]).
-
 -define(NAME,?MODULE).
 -record(state,{
-    currencies
+    conn
 }).
 
 
@@ -20,10 +19,8 @@ start_link()->
     gen_server:start_link({local,?NAME}, ?MODULE, [],[]).
 
 init(_Args)->
-    {ok,Value}=application:get_env(ex_banking, base_currency),
-     ets:new(currencies, [named_table]),
-    {ok,#state{currencies=dict:store(Value, 1, dict:new())}}.
-
+        {ok,Connection}=eredis:start_link(),
+        {ok,#state{conn=Connection},{continue,hidrate_store}}.
 
 -spec get_coefficient(Currency)->{ok,{Currency, Coefficient::number()}} | currency_not_found |  {error , wrong_arguments} 
                                     when Currency:: list() | atom().
@@ -68,6 +65,10 @@ update_currency(Currency,Coefficient)->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         Handlers    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+handle_continue(hidrate_store,State#state{conn=Conn})->
+    {ok,Value}=application:get_env(ex_banking, base_currency),
+    eredis:q(Conn,["HSET","currencies"|"eur",1])
+    {noreply,}
 handle_cast(stop,State)->
     {stop,State}.
 handle_call({get_currency,Currency},_From,State)->
