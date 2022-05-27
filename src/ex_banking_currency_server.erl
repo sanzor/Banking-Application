@@ -1,7 +1,7 @@
 -module(ex_banking_currency_server).
 -behaviour(gen_server).
 -export([start_link/0,init/1]).
--export([handle_call/3,handle_cast/2]).
+-export([handle_call/3,handle_cast/2,handle_continue/2]).
 -export([get_coefficient/1,add_currency/2,remove_currency/1,update_currency/2]).
 -define(NAME,?MODULE).
 -record(state,{
@@ -65,14 +65,15 @@ update_currency(Currency,Coefficient)->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%         Handlers    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-handle_continue(hidrate_store,State#state{conn=Conn})->
+handle_continue(hidrate_store,State=#state{conn=Conn})->
     {ok,Value}=application:get_env(ex_banking, base_currency),
-    eredis:q(Conn,["HSET","currencies"|"eur",1])
-    {noreply,}
+    eredis:q(Conn,["HMSET","currencies"|[Value,1]]),
+    {noreply,State}.
 handle_cast(stop,State)->
     {stop,State}.
 handle_call({get_currency,Currency},_From,State)->
-    Reply=case dict:find(Currency, State#state.currencies) of
+    Reply=case eredis:q(State#state.conn,"hget","currencies","Currency") of
+            {ok,<<Value>>} -> binary_to_float(Value)
             error ->currency_does_not_exist;
             {ok,Value}->{ok,Value}
     end,

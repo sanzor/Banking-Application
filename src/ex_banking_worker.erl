@@ -23,14 +23,26 @@ init(CounterRef)->
 %%
 % Sync API
 %%
+-spec create_user(Pid::pid(),User::string())->any().
 create_user(Pid,User)->
     gen_server:call(Pid,{create_user,User}).
+
+
+-spec get_balance(Pid::pid(),{User::string(),Currency::string()})->any().
 get_balance(Pid,{User,Currency})->
     gen_server:call(Pid,{Currency,{get_balance,User}}).
+
+
+-spec deposit(Pid::pid(),{User::string(),Amount::Currency::string()})->any().
 deposit(Pid,{User,Amount,Currency})->
     gen_server:call(Pid,{Currency,{deposit,{User,Amount}}}).
+
+-spec withdraw(Pid::pid(),{User::string(),Amount::Currency::string()})->any().
 withdraw(Pid,{User,Amount,Currency})->
     gen_server:call(Pid,{Currency,{withdraw,{User,Amount}}}).
+
+
+-spec send(Pid::pid(),{From_User::string(),To_User::string(),Amount::Currency::string()})->any().
 send(Pid,{From_User,To_User,Amount,Currency})->
     gen_server:call(Pid,{Currency,{send,{From_User,To_User,Amount}}}).
 
@@ -42,16 +54,26 @@ send(Pid,{From_User,To_User,Amount,Currency})->
 fwd_create_user(Pid,SendTo,User)->
     gen_server:cast(Pid,{SendTo,{create_user,User}}).
 
+
+
+%@doc retrieves for SendTo the balance of target User  in specified Currency
 -spec fwd_get_balance(Pid::pid(),SendTo::pid(),{User::string(),Currency::string()})->any().
 fwd_get_balance(Pid,SendTo,{User,Currency})->
     gen_server:cast(Pid,{SendTo,{Currency,{get_balance,User}}}).
 
 
 
+
+-spec fwd_deposit(Pid::pid(),SendTo::pid(),{User::string(),Amount::number(),Currency::string()})->any().
 fwd_deposit(Pid,SendTo,{User,Amount,Currency})->
     gen_server:cast(Pid,{SendTo,{Currency,{deposit,{User,Amount}}}}).
+
+
+-spec fwd_withdraw(Pid::pid(),SendTo::pid(),{User::string(),Amount::number(),Currency::string()})->any().
 fwd_withdraw(Pid,SendTo,{User,Amount,Currency})->
     gen_server:cast(Pid,{SendTo,{Currency,{withdraw,{User,Amount}}}}).
+
+-spec fwd_send(Pid::pid(),SendTo::pid(),{From_User::string(),To_User::string(),Amount::number(),Currency::string()})->any().
 fwd_send(Pid,SendTo,{From_User,To_User,Amount,Currency})->
     gen_server:cast(Pid,{SendTo,{Currency,{send,{From_User,To_User,Amount}}}}).
 
