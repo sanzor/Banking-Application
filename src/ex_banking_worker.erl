@@ -139,7 +139,7 @@ handle_call({create_user,UserId}, _From, State)->
     {stop,normal,ok,State};
 
 handle_call({Currency,Request},From,State)->
-    {ok,Coefficient}=can_get_coefficient(Currency, State),
+     {ok,Coefficient}=can_get_coefficient(Currency, State),
      do_call(Coefficient,Request,From,State).
 
 
