@@ -71,6 +71,13 @@ handle_continue(hidrate_store,State=#state{conn=Conn})->
     {noreply,State}.
 handle_cast(stop,State)->
     {stop,State}.
+handle_call(Request,From,State)->
+    try
+        {reply,{ok,handle_call_impl(Request, From, State)},State}
+    catch
+        throw:currency_does_exist->{reply,{error,{currency_does_not_exist,[]}}};
+        error:Reason->{reply,{error,Reason}}
+    end;
 handle_call({get_coefficient,Currency},_From,State)->
      
         {ok,Value}=get_coefficient(Currency,State#state.conn),
@@ -100,6 +107,7 @@ handle_call({update_currency,Currency,Coefficient},_From,State)->
 %%
 % Internal functions
 %%
+handle_call_impl(Request,From,State)->
 
 -spec get_coefficient(Currency::string(),Conn::port())->{ok,number()}|does_not_exist.
 get_coefficient(Currency,Conn)->
