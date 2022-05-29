@@ -67,19 +67,18 @@ update_currency(Currency,Coefficient)->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 handle_continue(hidrate_store,State=#state{conn=Conn})->
     {ok,Value}=application:get_env(ex_banking, base_currency),
-    eredis:q(Conn,["HMSET","currencies"|[Value,1]]),
+    eredis:q(Conn,["hmset","currencies"|[Value,1]]),
     {noreply,State}.
 handle_cast(stop,State)->
     {stop,State}.
-handle_call(Request,From,State)->
-    try
-        {reply,{ok,handle_call_impl(Request, From, State)},State}
-    catch
-        throw:currency_does_exist->{reply,{error,{currency_does_not_exist,[]}}};
-        error:Reason->{reply,{error,Reason}}
-    end;
+% handle_call(Request,From,State)->
+%     try
+%         {reply,{ok,handle_call_impl(Request, From, State)},State}
+%     catch
+%         throw:currency_does_exist->{reply,{error,{currency_does_not_exist,[]}}};
+%         error:Reason->{reply,{error,Reason}}
+%     end;
 handle_call({get_coefficient,Currency},_From,State)->
-     
         {ok,Value}=get_coefficient(Currency,State#state.conn),
         {reply,Value,State};
      
@@ -91,7 +90,7 @@ handle_call({add_currency,Currency,Coefficient},_From,State)->
     
 
 handle_call({remove_currency,Currency},_From,State)->
-    eredis:q(State#state.conn,["hdel","currencies","Currency"]),
+    eredis:q(State#state.conn,["hdel","currencies",Currency]),
     {reply,{ok,{removed,Currency}},State};
 
 
@@ -107,13 +106,13 @@ handle_call({update_currency,Currency,Coefficient},_From,State)->
 %%
 % Internal functions
 %%
-handle_call_impl(Request,From,State)->
+handle_call_impl(Request,From,State)->undefined.
 
 -spec get_coefficient(Currency::string(),Conn::port())->{ok,number()}|does_not_exist.
 get_coefficient(Currency,Conn)->
     Reply=case eredis:q(Conn,"hget","currencies",Currency) of
             {ok,<<Value/binary>>} -> {ok,to_number(Value)};
-            _ -> erlang:raise(error,does_not_exist,[])
+            _ -> erlang:raise(error,currency_does_not_exist,[])
            end,
     Reply.
 to_number(Binary) when is_binary(Binary)->
