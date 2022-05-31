@@ -13,14 +13,14 @@
       {max_requests,10},
       {throttle_milliseconds,0},
       {port,7000},
+      {redis,[{port,6379},{hostname,"localhost"}]},
       {xx,10}
     ]},
   {modules, [
              ex_banking,
              ex_banking_app,
              ex_banking_sup,
-             ex_banking_currency_api,
-             ex_banking_currency_server,
+             ex_banking_coefficient_server,
              ex_banking_worker,
              ex_banking_worker_sup,
              ex_banking_account,

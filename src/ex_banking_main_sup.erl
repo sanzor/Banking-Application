@@ -44,12 +44,12 @@ init([]) ->
                  period => 5},
     ChildSpecs = [
     #{
-        id=>ex_banking_currency_server,
-        start=>{ex_banking_currency_server,start_link,[]},
+        id=>ex_banking_coefficient_server,
+        start=>{ex_banking_coefficient_server,start_link,[]},
         restart=>permanent,
         shutdown=>brutal_kill,
         type=>worker,
-        mod=>[ex_banking_currency_server]
+        mod=>[ex_banking_coefficient_server]
 
     },
     #{

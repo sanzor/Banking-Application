@@ -4,7 +4,7 @@
 -export([create_user/2,get_balance/2,deposit/2,withdraw/2,send/2]).
 -export([fwd_create_user/3,fwd_get_balance/3,fwd_deposit/3,fwd_withdraw/3,fwd_send/3]).
 -export([handle_call/3,handle_cast/2,init/1,start_link/0]).
-
+%-feature(maybe_expr,enable).
 -define(NAME,?MODULE).
 -record(state,{
    counter_Ref

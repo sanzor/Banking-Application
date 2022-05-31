@@ -1,8 +1,8 @@
--module(ex_banking_currency_server).
+-module(ex_banking_coefficient_server).
 -behaviour(gen_server).
 -export([start_link/0,init/1]).
 -export([handle_call/3,handle_cast/2,handle_continue/2]).
--export([get_coefficient/1,add_currency/2,remove_currency/1,update_currency/2]).
+-export([get_coefficient/1,add_coefficient/2,remove_coefficient/1,update_coefficient/2]).
 -define(NAME,?MODULE).
 -record(state,{
     conn
@@ -31,34 +31,34 @@ get_coefficient(Currency)->
 
 
 
--spec add_currency(Currency, Coefficient::number())->{ok,{added,Currency}} | 
+-spec add_coefficient(Currency::string(), Coefficient::number())->{ok,{added,Currency}} | 
                                                       currency_already_exists |{error , wrong_arguments}
                                                       when Currency :: list() | atom() .
-add_currency(Currency,Coefficient) when not is_number(Coefficient) ;not Coefficient>0; not (is_list(Currency) or is_atom(Currency))  ->
+add_coefficient(Currency,Coefficient) when not is_number(Coefficient) ;not Coefficient>0; not (is_list(Currency) or is_atom(Currency))  ->
     {error,invalid_arguments};
 
-add_currency(Currency,Coefficient)->
+add_coefficient(Currency,Coefficient)->
     gen_server:call(?NAME, {add_currency,Currency,Coefficient}).
 
 
 
--spec remove_currency(Currency)->{ok,{removed,Currency}}  | {error , wrong_arguments}
+-spec remove_coefficient(Currency)->{ok,{removed,Currency}}  | {error , wrong_arguments}
                                     when Currency:: list() | atom().
-remove_currency(Currency) when not is_atom(Currency) ; not is_list(Currency) ->
+remove_coefficient(Currency) when not is_atom(Currency) ; not is_list(Currency) ->
     {error,invalid_arguments};
 
-remove_currency(Currency)->
+remove_coefficient(Currency)->
     gen_server:call(?NAME, {remove_currency,Currency}).
 
 
 
--spec update_currency(Currency, Coefficient::number())->{ok,{updated,Currency}} |
+-spec update_coefficient(Currency, Coefficient::number())->{ok,{updated,Currency}} |
                                                          currency_does_not_exist | {error , wrong_arguments}
                                                          when Currency:: list() | atom().
-update_currency(Currency,Coefficient) when not is_number(Coefficient) ; not Coefficient>0 ; not is_list(Currency) , not is_atom(Currency) ->
+update_coefficient(Currency,Coefficient) when not is_number(Coefficient) ; not Coefficient>0 ; not is_list(Currency) , not is_atom(Currency) ->
     {error,wrong_arguments};
 
-update_currency(Currency,Coefficient)->
+update_coefficient(Currency,Coefficient)->
     gen_server:call(?NAME, {update_currency,Currency,Coefficient}).
 
 
@@ -67,7 +67,7 @@ update_currency(Currency,Coefficient)->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 handle_continue(hidrate_store,State=#state{conn=Conn})->
     {ok,Value}=application:get_env(ex_banking, base_currency),
-    eredis:q(Conn,["hmset","currencies"|[Value,1]]),
+    eredis:q(Conn,["hset","currencies"|[Value,1]]),
     {noreply,State}.
 handle_cast(stop,State)->
     {stop,State}.
@@ -85,7 +85,7 @@ handle_call({get_coefficient,Currency},_From,State)->
         
         
 handle_call({add_currency,Currency,Coefficient},_From,State)->
-    eredis:q(State#state.conn,["hset","currencies",[Currency,Coefficient]]),
+    eredis:q(State#state.conn,["hset","currencies"|[Currency,Coefficient]]),
     {reply,{ok,{added,Currency}},State};
     
 
@@ -110,7 +110,7 @@ handle_call_impl(Request,From,State)->undefined.
 
 -spec get_coefficient(Currency::string(),Conn::port())->{ok,number()}|does_not_exist.
 get_coefficient(Currency,Conn)->
-    Reply=case eredis:q(Conn,"hget","currencies",Currency) of
+    Reply=case eredis:q(Conn,["hget","currencies",[Currency]]) of
             {ok,<<Value/binary>>} -> {ok,to_number(Value)};
             _ -> erlang:raise(error,currency_does_not_exist,[])
            end,
