@@ -101,7 +101,7 @@ can_not_create_user_multiple_times(_Config)->
 can_get_balance(_Config)->
     {Currency,Coef}={usd,0.75},
     User=adi,
-    ex_banking:add_currency(Currency,Coef),
+    ex_banking:add_coefficient(Currency,Coef),
     ok=ex_banking:create_user(User),
     ?assertMatch({ok,_},ex_banking:get_balance(User, Currency)).
 
