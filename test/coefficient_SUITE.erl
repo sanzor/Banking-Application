@@ -7,16 +7,28 @@
 
 suite()->
     [{timetrap,{seconds,30}}].
+
+groups()->[].
+all()->
+    [
+        can_add_coefficient
+].
 init_per_suite(Config)->
     P=open_port({spawn,"redis-server"}, []),
     [#{port =>P}].
 
 end_per_suite(Config)->
     Port=proplists:get_value(port, Config),
-    port_close(Port)
+    port_close(Port).
 
+init_per_testcase(_Testcase,Config)->Config.
+end_per_testcase(_Config)->ok.
 
 can_add_coefficient()->
-    ex_banking:
+    Currency="eur",
+    Coefficient=1.5,
+    ex_banking_coefficient_server:add_coefficient(Currency, Coefficient),
+    {ok,Coefficient}=ex_banking_coefficient_server:get_coefficient(Currency),
     ok.
+
 

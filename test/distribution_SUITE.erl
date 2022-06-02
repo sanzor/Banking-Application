@@ -6,7 +6,7 @@
 
 
 all()->[
-    can_run_one_single_node
+   
 ].
 init_per_suite(Config)->
     [].

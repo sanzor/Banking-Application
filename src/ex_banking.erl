@@ -81,6 +81,50 @@ send(From_User,To_User,Amount,Currency)->
     gen_server:call(?SERVER, {send,{From_User,To_User,Amount,Currency}}).
 
 
+%%
+% coefficient API
+%%
+
+-spec get_coefficient(CoefficientId)->{ok,{CoefficientId, Coefficient::number()}} | currency_not_found |  {error , wrong_arguments} 
+                                    when CoefficientId:: list() | atom().
+get_coefficient(CoefficientId) when not is_list(CoefficientId) , not is_atom(CoefficientId)->
+    {error,invalid_arguments};
+get_coefficient(CoefficientId)->
+    ex_banking_coefficient_server:get_coefficient(CoefficientId).
+
+
+
+-spec add_coefficient(Currency::string(), Coefficient::number())->{ok,{added,Currency}} | 
+                                                      currency_already_exists |{error , wrong_arguments}
+                                                      when Currency :: list() | atom() .
+add_coefficient(Currency,Coefficient) when not is_number(Coefficient) ;not Coefficient>0; not (is_list(Currency) or is_atom(Currency))  ->
+    {error,invalid_arguments};
+
+add_coefficient(Currency,Coefficient)->
+    ex_banking_coefficient_server:add_coefficient(Currency, Coefficient).
+
+
+
+-spec remove_coefficient(Currency)->{ok,{removed,Currency}}  | {error , wrong_arguments}
+                                    when Currency:: list() | atom().
+remove_coefficient(Currency) when not is_atom(Currency) ; not is_list(Currency) ->
+    {error,invalid_arguments};
+
+remove_coefficient(Currency)->
+    ex_banking_coefficient_server:remove_coefficient(Currency).
+
+
+
+-spec update_coefficient(Currency, Coefficient::number())->{ok,{updated,Currency}} |
+                                                         currency_does_not_exist | {error , wrong_arguments}
+                                                         when Currency:: list() | atom().
+update_coefficient(Currency,Coefficient) when not is_number(Coefficient) ; not Coefficient>0 ; not is_list(Currency) , not is_atom(Currency) ->
+    {error,wrong_arguments};
+
+update_coefficient(Currency,Coefficient)->
+    ex_banking_coefficient_server:update_coefficient(Currency, Coefficient).
+
+
 %%%
 %  Handlers
 %%%

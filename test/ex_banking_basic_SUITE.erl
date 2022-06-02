@@ -154,7 +154,7 @@ can_not_withdraw_on_default(_Config)->
 
 can_withdraw_all(_Config)->
     {User,Amount,Currency,Coef}={adi,100,usd,0.75},
-    ex_banking:add_currency(Currency,Coef),
+    ex_banking:add_coefficient(Currency,Coef),
     ok=ex_banking:create_user(adi),
     {ok,_}=ex_banking:deposit(User, Amount, Currency),
     {ok,AfterWithdrawBalance}=ex_banking:withdraw(User, Amount, Currency),
