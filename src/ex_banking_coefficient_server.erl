@@ -85,7 +85,7 @@ handle_call({get_coefficient,Currency},_From,State)->
         
         
 handle_call({add_currency,Currency,Coefficient},_From,State)->
-    eredis:q(State#state.conn,["hset","currencies"|[Currency,Coefficient]]),
+    eredis:q(State#state.conn,["hset","currencies"|[Currency,to_binary(Coefficient)]]),
     {reply,{ok,{added,Currency}},State};
     
 
@@ -97,7 +97,7 @@ handle_call({remove_currency,Currency},_From,State)->
 handle_call({update_currency,Currency,Coefficient},_From,State)->
     try
          {ok,_}=get_coefficient(Currency,State#state.conn),
-         eredis:q(State#state.conn,["hset","currencies",[Currency,Coefficient]]),
+         eredis:q(State#state.conn,["hset","currencies"|[Currency,to_binary(Coefficient)]]),
          {reply,{ok,{updated,Currency}},State}
     catch
         error:does_not_exist->{reply,currency_does_not_exist,State}
@@ -120,6 +120,10 @@ to_number(Binary) when is_binary(Binary)->
         true -> binary_to_float(Binary);
         false-> binary_to_integer(Binary)
     end.
+
+to_binary(Number) when is_integer(Number)->integer_to_binary(Number);
+to_binary(Number) when is_float(Number)->float_to_binary(Number).
+    
 
 contains_dot(<<>>)->false;
 contains_dot(<<".",_>>)->true;

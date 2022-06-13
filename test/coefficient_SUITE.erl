@@ -15,6 +15,7 @@ all()->
 ].
 init_per_suite(Config)->
     P=open_port({spawn,"redis-server"}, []),
+    application:ensure_started(ex_banking),
     [#{port =>P}].
 
 end_per_suite(Config)->

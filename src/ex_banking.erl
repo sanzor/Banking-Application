@@ -4,7 +4,7 @@
 -define(SERVER,?MODULE).
 -export([handle_call/3,handle_cast/2,init/1,start_link/0]).
 -export([create_user/1,deposit/3,withdraw/3,get_balance/2,send/4]).
-
+-export([get_coefficient/1,add_coefficient/2,remove_coefficient/1,update_coefficient/2]).
 %----------------------------------------------------------------------------------
 %--------------------Banking  API--------------------------------------------------
 %----------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ add_coefficient(Currency,Coefficient)->
 
 -spec remove_coefficient(Currency)->{ok,{removed,Currency}}  | {error , wrong_arguments}
                                     when Currency:: list() | atom().
-remove_coefficient(Currency) when not is_atom(Currency) ; not is_list(Currency) ->
+remove_coefficient(Currency) when not is_atom(Currency) , not is_list(Currency) ->
     {error,invalid_arguments};
 
 remove_coefficient(Currency)->
