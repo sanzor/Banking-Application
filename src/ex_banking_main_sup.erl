@@ -75,6 +75,14 @@ init([]) ->
         shutdown=>brutal_kill,
         type=>supervisor,
         mod=>[ex_banking_worker_sup]
+    },
+    #{
+        id=>ex_banking,
+        start=>{ex_banking,start_link,[]},
+        restart=>permanent,
+        shutdown=>5000,
+        type=>worker,
+        mod=>[ex_banking]
     }],
     {ok, {SupFlags, ChildSpecs}}.
 
