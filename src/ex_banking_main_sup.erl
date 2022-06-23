@@ -50,7 +50,6 @@ init([]) ->
         shutdown=>brutal_kill,
         type=>worker,
         mod=>[ex_banking_coefficient_server]
-
     },
     #{
         id=>ex_banking_account_map,

@@ -7,7 +7,7 @@
 
 -export([all/0,suite/0,init_per_suite/1,end_per_suite/1,init_per_testcase/2,end_per_testcase/1]).
 
--export([can_add_coefficient/0]).
+-export([can_add_coefficient/1]).
 suite()->
     [{timetrap,{seconds,30}}].
 
@@ -28,13 +28,20 @@ end_per_suite(Config)->
 
 init_per_testcase(_Testcase,Config)->Config.
 end_per_testcase(_Config)->ok.
-
-can_add_coefficient()->
+can_delete_coefficient(Config)->
+    {ok,Con}=eredis:start_link(),
+    Ok=eredis:q(Con,["hset","currencies"|["eur",1]]),
+    
+    ex_banking_coefficient_server:remove_coefficient("eur"),
+    Ok=eredis:q(Con,["hget","currencies","eur"])
+can_add_coefficient(Config)->
     Currency="eur",
     Coefficient=1.5,
     ex_banking_coefficient_server:add_coefficient(Currency, Coefficient),
     {ok,Coefficient}=ex_banking_coefficient_server:get_coefficient(Currency),
     ok.
+
+
 
 
 

@@ -79,13 +79,18 @@ handle_cast(stop,State)->
 %         error:Reason->{reply,{error,Reason}}
 %     end;
 handle_call({get_coefficient,Currency},_From,State)->
+    Reply=try
         {ok,Value}=get_coefficient(Currency,State#state.conn),
-        {reply,Value,State};
+        Value
+    catch 
+        error:currency_does_not_exist->currency_does_not_exist
+    end,
+    {reply,Reply,State};
      
         
         
 handle_call({add_currency,Currency,Coefficient},_From,State)->
-    eredis:q(State#state.conn,["hset","currencies"|[Currency,to_binary(Coefficient)]]),
+    {ok,_Result}=eredis:q(State#state.conn,["hset","currencies"|[Currency,to_binary(Coefficient)]]),
     {reply,{ok,{added,Currency}},State};
     
 
