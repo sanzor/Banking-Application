@@ -37,9 +37,14 @@
          can_not_send_with_not_enough_balance/1]).
 
 init_per_suite(_Config)->
-    [].
+    P=open_port({spawn,"redis-server"}, []),
+    application:ensure_started(ex_banking),
+    [{port,P}|_Config].
+
 end_per_suite(_Config)->
-    ok.
+    Port=proplists:get_value(port, _Config),
+    port_close(Port),
+    _Config.
 
 
 init_per_testcase(_Case,_Config)->

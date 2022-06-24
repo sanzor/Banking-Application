@@ -7,14 +7,16 @@
 
 -export([all/0,suite/0,init_per_suite/1,end_per_suite/1,init_per_testcase/2,end_per_testcase/1]).
 
--export([can_add_coefficient/1]).
+-export([can_add_coefficient/1,
+         can_delete_coefficient/1]).
 suite()->
     [{timetrap,{seconds,30}}].
 
 groups()->[].
 all()->
     [
-        can_add_coefficient
+        can_add_coefficient,
+        can_delete_coefficient
 ].
 init_per_suite(Config)->
     P=open_port({spawn,"redis-server"}, []),
@@ -23,18 +25,17 @@ init_per_suite(Config)->
 
 end_per_suite(Config)->
     Port=proplists:get_value(port, Config),
-    %port_close(Port),
+    port_close(Port),
     Config.
 
 init_per_testcase(_Testcase,Config)->Config.
 end_per_testcase(_Config)->ok.
-can_delete_coefficient(Config)->
+can_delete_coefficient(_Config)->
     {ok,Con}=eredis:start_link(),
     Ok=eredis:q(Con,["hset","currencies"|["eur",1]]),
-    
     ex_banking_coefficient_server:remove_coefficient("eur"),
-    Ok=eredis:q(Con,["hget","currencies","eur"])
-can_add_coefficient(Config)->
+    Ok=eredis:q(Con,["hget","currencies","eur"]).
+can_add_coefficient(_Config)->
     Currency="eur",
     Coefficient=1.5,
     ex_banking_coefficient_server:add_coefficient(Currency, Coefficient),
