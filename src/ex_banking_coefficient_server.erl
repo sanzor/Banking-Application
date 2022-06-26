@@ -116,7 +116,7 @@ handle_call_impl(Request,From,State)->undefined.
 -spec get_coefficient(Currency::string(),Conn::port())->{ok,number()}|does_not_exist.
 get_coefficient(Currency,Conn)->
     Reply=case eredis:q(Conn,["hget","currencies",[Currency]]) of
-            {ok,<<Value/binary>>} -> {ok,to_number(Value)};
+            {ok,BinValue} -> {ok,to_number(BinValue)};
             _ -> erlang:raise(error,currency_does_not_exist,[])
            end,
     Reply.
@@ -131,5 +131,5 @@ to_binary(Number) when is_float(Number)->float_to_binary(Number).
     
 
 contains_dot(<<>>)->false;
-contains_dot(<<".",_>>)->true;
+contains_dot(<<".",_/binary>>)->true;
 contains_dot(<<_,Rest/binary>>)->contains_dot(Rest).

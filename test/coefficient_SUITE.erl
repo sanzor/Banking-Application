@@ -28,6 +28,9 @@ init_per_suite(Config)->
     {ok,_Started}=application:ensure_all_started(ex_banking),
     [{port,P}|Config].
 
+
+
+
 end_per_suite(Config)->
     % Port=proplists:get_value(port, Config),
     % port_close(Port),
@@ -41,8 +44,9 @@ can_get_coefficient(_Config)->
     Coefficient=1.5,
     {ok,Con}=eredis:start_link(),
     _=eredis:q(Con,["hset","currencies"|[Currency,float_to_binary(Coefficient)]]),
-    {ok,Currency,BinCoefficient}=ex_banking_coefficient_server:get_coefficient(Currency),
-    ?assertEqual(float_to_binary(Coefficient),BinCoefficient).
+    {ok,{Currency,C}}=ex_banking_coefficient_server:get_coefficient(Currency),
+    io:format("~p",[C]).
+    
     
 can_delete_coefficient(_Config)->
     {ok,Con}=eredis:start_link(),
