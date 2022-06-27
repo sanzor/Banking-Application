@@ -44,33 +44,36 @@ can_get_coefficient(_Config)->
     Coefficient=1.5,
     {ok,Con}=eredis:start_link(),
     _=eredis:q(Con,["hset","currencies"|[Currency,float_to_binary(Coefficient)]]),
-    {ok,{Currency,C}}=ex_banking_coefficient_server:get_coefficient(Currency),
-    io:format("~p",[C]).
+    {ok,Coefficient}=ex_banking_coefficient_server:get_coefficient(Currency).
     
     
 can_delete_coefficient(_Config)->
+    Currency="eur",
+    Coefficient=1,
     {ok,Con}=eredis:start_link(),
-    Ok=eredis:q(Con,["hset","currencies"|["eur",1]]),
-    ex_banking_coefficient_server:remove_coefficient("eur"),
-    Ok=eredis:q(Con,["hget","currencies","eur"]).
+    {ok,_}=eredis:q(Con,["hset","currencies"|[Currency,Coefficient]]),
+    {ok,{removed,Currency}}=ex_banking_coefficient_server:remove_coefficient(Currency),
+    {ok,_}=eredis:q(Con,["hget","currencies","eur"]).
 can_add_coefficient(_Config)->
     Currency="eur",
     Coefficient=1.5,
-    BinCoef=float_to_binary(Coefficient),
-    ex_banking_coefficient_server:add_coefficient(Currency, BinCoef),
+     BinCoef=float_to_binary(Coefficient),
+    {ok,{added,Currency}}=ex_banking_coefficient_server:add_coefficient(Currency, Coefficient),
     {ok,Con}=eredis:start_link(),
-    {ok,BinCoef}=eredis:q(Con,["hget","currencies",Coefficient]).
+    {ok,BinCoef}=eredis:q(Con,["hget","currencies",Currency]).
    
 
 can_update_coefficient(_Config)->
     Currency="eur",
     InitialCoefficient=1.5,
     NewCoefficient=2.0,
+    
     {ok,Con}=eredis:start_link(),
-    _=eredis:q(Con,["hset","currencies"|[Currency,InitialCoefficient]]),
-    ex_banking_coefficient_server:update_coefficient(Currency,float_to_binary(NewCoefficient)),
-    {ok,BinValue}=eredis:q(Con,["hget","currencies","Currency"]),
-    ?assertEqual(float_to_binary(NewCoefficient),BinValue).
+    _=eredis:q(Con,["hset","currencies"|[Currency,float_to_binary(InitialCoefficient)]]),
+    {ok,{updated,Currency}}=ex_banking_coefficient_server:update_coefficient(Currency,NewCoefficient),
+    {ok,BinValue}=eredis:q(Con,["hget","currencies",Currency]),
+    ?assertEqual(BinValue, float_to_binary(NewCoefficient)).
+    
 
 
 

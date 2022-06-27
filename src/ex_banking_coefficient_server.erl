@@ -81,7 +81,7 @@ handle_cast(stop,State)->
 handle_call({get_coefficient,Currency},_From,State)->
     Reply=try
         {ok,Value}=get_coefficient(Currency,State#state.conn),
-        Value
+        {ok,Value}
     catch 
         error:currency_does_not_exist->currency_does_not_exist
     end,
