@@ -38,7 +38,7 @@
 
 init_per_suite(_Config)->
     P=open_port({spawn,"redis-server"}, []),
-    application:ensure_started(ex_banking),
+    application:ensure_all_started(ex_banking),
     [{port,P}|_Config].
 
 end_per_suite(_Config)->
@@ -48,17 +48,8 @@ end_per_suite(_Config)->
 
 
 init_per_testcase(_Case,_Config)->
-    case proplists:lookup(ex_banking, application:which_applications()) of
-        none -> application:ensure_started(ex_banking);
-        _ -> application:stop(ex_banking),
-             application:ensure_started(ex_banking)
-     end,
     _Config.
 end_per_testcase(_Case,_Config)->
-    case proplists:lookup(ex_banking, application:which_applications()) of
-        none -> ok;
-        _ -> application:stop(ex_banking)
-    end,
     ok.
 
 all()->[
@@ -88,7 +79,7 @@ all()->[
     can_not_send_with_not_enough_balance
 ].
 can_create_user(_Config)->
-    ?assertEqual(ok,ex_banking:create_user(some_user)).
+    ok=ex_banking:create_user(some_user).
 
 can_create_users(_Config)->
     Ls=lists:map(fun(Elem)->erlang:integer_to_list(Elem) end, lists:seq(10,100)),
@@ -97,11 +88,11 @@ can_create_users(_Config)->
     
 
 can_not_create_with_wrong_username(_Config)->
-    ?assertMatch({error,wrong_arguments},ex_banking:create_user(1)),
-    ?assertMatch({error,wrong_arguments}, ex_banking:create_user({a,b})).
+    {error,wrong_arguments}=ex_banking:create_user(1),
+    {error,wrong_arguments}=ex_banking:create_user({a,b}).
 can_not_create_user_multiple_times(_Config)->
-    ?assertEqual(ok,ex_banking:create_user(some_user)),
-    ?assertEqual(user_already_exists,ex_banking:create_user(some_user)).
+    ok=ex_banking:create_user(some_user),
+    user_already_exists=ex_banking:create_user(some_user).
 
 can_get_balance(_Config)->
     {Currency,Coef}={usd,0.75},

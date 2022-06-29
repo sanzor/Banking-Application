@@ -44,7 +44,7 @@ add_coefficient(Currency,Coefficient)->
 
 -spec remove_coefficient(Currency)->{ok,{removed,Currency}}  | {error , wrong_arguments}
                                     when Currency:: list() | atom().
-remove_coefficient(Currency) when not is_atom(Currency) ; not is_list(Currency) ->
+remove_coefficient(Currency) when not is_atom(Currency) , not is_list(Currency) ->
     {error,invalid_arguments};
 
 remove_coefficient(Currency)->
