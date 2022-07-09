@@ -1,8 +1,20 @@
 -module(ex_banking_worker).
 -behaviour(gen_server).
 -include("records.hrl").
--export([create_user/2,get_balance/2,deposit/2,withdraw/2,send/2]).
--export([fwd_create_user/3,fwd_get_balance/3,fwd_deposit/3,fwd_withdraw/3,fwd_send/3]).
+
+-export([create_user/2,
+         delete_user/2,
+         get_balance/2,
+         deposit/2,
+         withdraw/2,
+         send/2]).
+
+-export([fwd_create_user/3,
+         fwd_get_balance/3,
+         fwd_deposit/3,
+         fwd_withdraw/3,
+         fwd_send/3]).
+
 -export([handle_call/3,handle_cast/2,init/1,start_link/0]).
 %-feature(maybe_expr,enable).
 -define(NAME,?MODULE).
@@ -27,7 +39,9 @@ init(CounterRef)->
 create_user(Pid,User)->
     gen_server:call(Pid,{create_user,User}).
 
-
+-spec delete_user(Pid::pid(),User::string())->any().
+delete_user(Pid,User)->
+    gen_server:call(Pid,{delete_user,User}).
 -spec get_balance(Pid::pid(),{User::string(),Currency::string()})->any().
 get_balance(Pid,{User,Currency})->
     gen_server:call(Pid,{Currency,{get_balance,User}}).
@@ -89,6 +103,11 @@ handle_cast({SendTo,{create_user,UserId}}, State)->
     ok=do_create_user(UserId, State),
     gen_server:reply(SendTo,ok),
     {stop,normal,State};
+
+handle_cast({SendTo,{delete_user,UserId}}, State)->
+        ok=do_delete_user(UserId, State),
+        gen_server:reply(SendTo,ok),
+        {stop,normal,State};
 
 handle_cast({SendTo,{Currency,Request}},State)->
     {ok,Coefficient}=can_get_coefficient(Currency, State),
@@ -213,7 +232,15 @@ handle_withdraw_result({ok,From_NewBalanceInBaseCurrency},To_Pid,Amount,State)->
 do_create_user(UserId,State)->
     {ok,Pid}=ex_banking_account_sup:create_account(UserId),
     Ref=erlang:monitor(process, Pid),
+    try
     case ex_banking_account_map:create_user(UserId, Pid, Ref) of
        account_already_exists-> throw({stop,normal,user_already_exists,State});
        ok ->ok
+    end
+    catch
+        error:user_already_exists->ex_banking_account_sup:delete_account(Pid),
+                                   user_already_exists
     end.
+
+do_delete_user(UserId,State)->
+    ex_banking_account_map:

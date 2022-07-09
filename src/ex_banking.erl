@@ -3,8 +3,18 @@
 
 -define(SERVER,?MODULE).
 -export([handle_call/3,handle_cast/2,init/1,start_link/0]).
--export([create_user/1,deposit/3,withdraw/3,get_balance/2,send/4]).
--export([get_coefficient/1,add_coefficient/2,remove_coefficient/1,update_coefficient/2]).
+
+-export([create_user/1,
+         delete_user/1,
+         deposit/3,
+         withdraw/3,
+         get_balance/2,
+         send/4]).
+
+-export([get_coefficient/1,
+         add_coefficient/2,
+         remove_coefficient/1,
+         update_coefficient/2]).
 %----------------------------------------------------------------------------------
 %--------------------Banking  API--------------------------------------------------
 %----------------------------------------------------------------------------------
@@ -20,8 +30,9 @@ create_user(User) when not is_list(User) , not is_atom(User)->{error,wrong_argum
 create_user(User)->
     gen_server:call(?SERVER, {create_user,User}).
             
-           
-
+-spec delete_user(User::string()|list())-> ok | user_does_not_exist.
+delete_user(User)->
+    gen_server:call(?SERVER,{delete_user,User}).
 
 
 -spec get_balance(User :: string(), Currency :: string()) 
@@ -141,6 +152,13 @@ handle_call({create_user,User},From,State)->
      Result= ex_banking_worker:fwd_create_user(Pid,From,User),
      gen_server:reply(From,Result),
      {noreply,State};
+
+handle_call({create_user,User},From,State)->
+     {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
+     Result= ex_banking_worker:fw(Pid,From,User),
+     gen_server:reply(From,Result),
+     {noreply,State};
+    
 
 handle_call({get_balance,{User,Currency}},From,State)->
     {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
