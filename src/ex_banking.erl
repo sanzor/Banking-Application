@@ -149,14 +149,12 @@ handle_cast(_Args,State)->
 
 handle_call({create_user,User},From,State)->
     {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
-     Result= ex_banking_worker:fwd_create_user(Pid,From,User),
-     gen_server:reply(From,Result),
+     gen_server:reply(From,ex_banking_worker:fwd_create_user(Pid,From,User)),
      {noreply,State};
 
-handle_call({create_user,User},From,State)->
+handle_call({delete_user,User},From,State)->
      {ok,Pid}=ex_banking_worker_sup:fetch_worker(),
-     Result= ex_banking_worker:fw(Pid,From,User),
-     gen_server:reply(From,Result),
+     gen_server:reply(From,ex_banking_worker:fwd_delete_user(Pid, From, User)),
      {noreply,State};
     
 

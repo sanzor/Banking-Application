@@ -6,12 +6,16 @@
 
 -export([
     all/0,
+    groups/0,
     init_per_suite/1,
     end_per_suite/1,
     init_per_testcase/2,
-    end_per_testcase/2]).
+    end_per_testcase/2,
+    init_per_group/2,
+    end_per_group/2]).
 
 -export([can_create_user/1,
+        can_delete_user/1,
         can_not_create_user_multiple_times/1,
         can_create_users/1,
         can_not_create_with_wrong_username/1]).
@@ -52,8 +56,12 @@ init_per_testcase(_Case,_Config)->
 end_per_testcase(_Case,_Config)->
     ok.
 
+init_per_group(_,_Config)->_Config.
+end_per_group(_,_Config)->_Config.
 all()->[
+    
     can_create_user,
+    can_delete_user,
     can_create_users,
     can_not_create_with_wrong_username,
     can_not_create_user_multiple_times,
@@ -78,11 +86,26 @@ all()->[
     can_not_send_with_no_receiver,
     can_not_send_with_not_enough_balance
 ].
+
+groups()->[].
+%     [
+%     {user,[],
+%         can_create_user,
+%         can_delete_user
+%     }
+% ].
 can_create_user(_Config)->
     ok=ex_banking:create_user(some_user).
 
+can_delete_user(_Config)->
+    user_does_not_exist=ex_banking:delete_user(some_user_2),
+    ok=ex_banking:create_user(some_user_2),
+    ok=ex_banking:delete_user(some_user_2),
+    user_does_not_exist=ex_banking:delete_user(some_user_2).
+
 can_create_users(_Config)->
     Ls=lists:map(fun(Elem)->erlang:integer_to_list(Elem) end, lists:seq(10,100)),
+
     [?assertMatch(ok,ex_banking:create_user(X)) || X <-  Ls].
     
     

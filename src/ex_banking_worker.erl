@@ -10,6 +10,7 @@
          send/2]).
 
 -export([fwd_create_user/3,
+         fwd_delete_user/3,
          fwd_get_balance/3,
          fwd_deposit/3,
          fwd_withdraw/3,
@@ -68,7 +69,8 @@ send(Pid,{From_User,To_User,Amount,Currency})->
 fwd_create_user(Pid,SendTo,User)->
     gen_server:cast(Pid,{SendTo,{create_user,User}}).
 
-
+fwd_delete_user(Pid,SendTo,User)->
+    gen_server:cast(Pid,{SendTo,{delete_user,User}}).
 
 %@doc retrieves for SendTo the balance of target User  in specified Currency
 -spec fwd_get_balance(Pid::pid(),SendTo::pid(),{User::string(),Currency::string()})->any().
@@ -100,14 +102,12 @@ fwd_send(Pid,SendTo,{From_User,To_User,Amount,Currency})->
 
 -spec handle_cast({SendTo::pid(),{create_user,UserId::string()}},State::term())->StateResult::term(). 
 handle_cast({SendTo,{create_user,UserId}}, State)->
-    ok=do_create_user(UserId, State),
-    gen_server:reply(SendTo,ok),
+    gen_server:reply(SendTo,do_create_user(UserId, State)),
     {stop,normal,State};
 
 
 handle_cast({SendTo,{delete_user,UserId}}, State)->
-        Result=do_delete_user(UserId),
-        gen_server:reply(SendTo,Result),
+        gen_server:reply(SendTo,do_delete_user(UserId)),
         {stop,normal,State};
 
 handle_cast({SendTo,{Currency,Request}},State)->
@@ -155,10 +155,10 @@ do_cast(Coefficient,SendTo,{send,{From_User_Id,To_User_Id,Amount}},State)->
 
 
 handle_call({create_user,UserId}, _From, State)->
-    ok=do_create_user(UserId, State),
-    {stop,normal,ok,State};
+    {stop,normal,do_create_user(UserId, State),State};
 
-
+handle_call({delete_user,UserId}, _From, State)->
+    {stop,normal,do_delete_user(UserId),State};
 
 handle_call({Currency,Request},From,State)->
      {ok,Coefficient}=can_get_coefficient(Currency, State),
