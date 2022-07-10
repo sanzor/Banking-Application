@@ -10,6 +10,8 @@ start_link()->
 create_account(User)->
     {ok,Pid}=supervisor:start_child(?NAME,[User]),
     {ok,Pid}.
+
+-spec delete_account(Pid::pid())->ok.
 delete_account(Pid)->
     ok=supervisor:delete_child(?MODULE,Pid).
 

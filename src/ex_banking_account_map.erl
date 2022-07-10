@@ -4,8 +4,9 @@
 -export([start_link/0,init/1,handle_cast/2,handle_call/3]).
 -export([
     create_user/3,
-    delete_user/2,
-    get_user/1]).
+    delete_user/1,
+    get_user/1
+]).
 
 -record(state,{
     accounts=[]
@@ -26,11 +27,12 @@ start_link()->
 create_user(User,Pid,Ref)->
     gen_server:call(?NAME,{create_user,{User,Pid,Ref}}).
 
--spec delete_user(User::string())->ok | user_does_not_exist.
+-spec delete_user(User::string())->{ok,AccountPid::pid()} | user_does_not_exist.
 delete_user(User)->
     gen_server:call(?NAME,{delete_user,User}).
 get_user(User)->
     gen_server:call(?NAME, {get_user,User}).
+
 
 %%%%%%%%%%%%%%%%%%%%%% Handlers
 %%%
@@ -56,7 +58,7 @@ handle_call({create_user,{UserId,Pid,Ref}},_From,State)->
 handle_call({delete_user,UserId},_From,State)->
     case dict:is_key(UserId, State#state.accounts) of
         true ->NewDict= dict:erase(UserId,State#state.accounts),
-               {reply,ok,State#state{accounts=NewDict}};
+               {reply,{ok,(dict:find(UserId, NewDict))#user.pid},State#state{accounts=NewDict}};
         false-> user_does_not_exist
     end.
                      

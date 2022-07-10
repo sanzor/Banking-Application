@@ -104,9 +104,10 @@ handle_cast({SendTo,{create_user,UserId}}, State)->
     gen_server:reply(SendTo,ok),
     {stop,normal,State};
 
+
 handle_cast({SendTo,{delete_user,UserId}}, State)->
-        ok=do_delete_user(UserId, State),
-        gen_server:reply(SendTo,ok),
+        Result=do_delete_user(UserId),
+        gen_server:reply(SendTo,Result),
         {stop,normal,State};
 
 handle_cast({SendTo,{Currency,Request}},State)->
@@ -156,6 +157,8 @@ do_cast(Coefficient,SendTo,{send,{From_User_Id,To_User_Id,Amount}},State)->
 handle_call({create_user,UserId}, _From, State)->
     ok=do_create_user(UserId, State),
     {stop,normal,ok,State};
+
+
 
 handle_call({Currency,Request},From,State)->
      {ok,Coefficient}=can_get_coefficient(Currency, State),
@@ -242,5 +245,9 @@ do_create_user(UserId,State)->
                                    user_already_exists
     end.
 
-do_delete_user(UserId,State)->
-    ex_banking_account_map:
+do_delete_user(UserId)->
+   case ex_banking_account_map:delete_user(UserId) of
+     {ok,DeletedMappingAccountPid} -> ex_banking_account_sup:delete_account(DeletedMappingAccountPid);
+      user_does_not_exist-> user_does_not_exist
+   end.
+
