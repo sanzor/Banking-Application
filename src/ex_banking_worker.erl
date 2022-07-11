@@ -155,7 +155,7 @@ do_cast(Coefficient,SendTo,{send,{From_User_Id,To_User_Id,Amount}},State)->
 
 
 handle_call({create_user,UserId}, _From, State)->
-    {stop,normal,do_create_user(UserId, State),State};
+    {stop,normal,do_create_user(UserId),State};
 
 handle_call({delete_user,UserId}, _From, State)->
     {stop,normal,do_delete_user(UserId),State};
@@ -233,17 +233,13 @@ handle_withdraw_result({ok,From_NewBalanceInBaseCurrency},To_Pid,Amount,State)->
     end.
 
 do_create_user(UserId,State)->
-    {ok,Pid}=ex_banking_account_sup:create_account(UserId),
-    Ref=erlang:monitor(process, Pid),
-    try
-    case ex_banking_account_map:create_user(UserId, Pid, Ref) of
-       account_already_exists-> throw({stop,normal,user_already_exists,State});
-       ok ->ok
-    end
-    catch
-        error:user_already_exists->ex_banking_account_sup:delete_account(Pid),
-                                   user_already_exists
-    end.
+        case ex_banking_account_map:get_user(UserId) of
+            {ok,_Value}->throw({stop,normal,user_already_exists,State});
+            user_does_not_exist ->{ok,Pid}=ex_banking_account_sup:create_account(UserId),
+                                   Ref=erlang:monitor(process, Pid),
+                                   ex_banking_account_map:create_user(UserId, Pid, Ref)
+        end.
+   
 
 do_delete_user(UserId)->
    case ex_banking_account_map:delete_user(UserId) of

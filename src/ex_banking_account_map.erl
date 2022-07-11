@@ -27,9 +27,11 @@ start_link()->
 create_user(User,Pid,Ref)->
     gen_server:call(?NAME,{create_user,{User,Pid,Ref}}).
 
--spec delete_user(User::string())->{ok,AccountPid::pid()} | user_does_not_exist.
+-spec delete_user(User::string())->{ok,AccountPid} when AccountPid::pid()|undefined.  
 delete_user(User)->
     gen_server:call(?NAME,{delete_user,User}).
+
+-spec get_user(User)->{ok,Value} |account_already_exists when User::list()|atom(),Value::term().
 get_user(User)->
     gen_server:call(?NAME, {get_user,User}).
 
@@ -56,11 +58,9 @@ handle_call({create_user,{UserId,Pid,Ref}},_From,State)->
     end;
 
 handle_call({delete_user,UserId},_From,State)->
-    case dict:is_key(UserId, State#state.accounts) of
-        true ->NewDict= dict:erase(UserId,State#state.accounts),
-               {reply,{ok,(dict:find(UserId, NewDict))#user.pid},State#state{accounts=NewDict}};
-        false-> user_does_not_exist
-    end.
+        NewDict=dict:erase(UserId,State#state.accounts),
+        {reply,ok,State#state{accounts=NewDict}}.
+       
                      
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

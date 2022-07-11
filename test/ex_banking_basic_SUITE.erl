@@ -87,18 +87,18 @@ all()->[
     can_not_send_with_not_enough_balance
 ].
 
-groups()->[].
-%     [
-%     {user,[],
-%         can_create_user,
-%         can_delete_user
-%     }
-% ].
+groups()->[
+    
+    {user,[],
+        [can_create_user,
+        can_delete_user]
+    }
+].
 can_create_user(_Config)->
     ok=ex_banking:create_user(some_user).
 
 can_delete_user(_Config)->
-    user_does_not_exist=ex_banking:delete_user(some_user_2),
+    {ok,_Something}=ex_banking:delete_user(some_user_2),
     ok=ex_banking:create_user(some_user_2),
     ok=ex_banking:delete_user(some_user_2),
     user_does_not_exist=ex_banking:delete_user(some_user_2).
