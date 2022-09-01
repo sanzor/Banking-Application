@@ -102,8 +102,12 @@ fwd_send(Pid,SendTo,{From_User,To_User,Amount,Currency})->
 
 -spec handle_cast({SendTo::pid(),{create_user,UserId::string()}},State::term())->StateResult::term(). 
 handle_cast({SendTo,{create_user,UserId}}, State)->
-    gen_server:reply(SendTo,do_create_user(UserId, State)),
-    {stop,normal,State};
+    try
+        gen_server:reply(SendTo,do_create_user(UserId)),
+        {stop,normal,State}
+    catch
+        throw:user_already_exists->{stop,normal,user_already_exists,State}
+    end;
 
 
 handle_cast({SendTo,{delete_user,UserId}}, State)->
@@ -232,9 +236,9 @@ handle_withdraw_result({ok,From_NewBalanceInBaseCurrency},To_Pid,Amount,State)->
         too_many_requests_to_user -> throw({stop,normal,too_many_requests_to_receiver,State})
     end.
 
-do_create_user(UserId,State)->
+do_create_user(UserId)->
         case ex_banking_account_map:get_user(UserId) of
-            {ok,_Value}->throw({stop,normal,user_already_exists,State});
+            {ok,_Value}->throw(user_already_exists);
             user_does_not_exist ->{ok,Pid}=ex_banking_account_sup:create_account(UserId),
                                    Ref=erlang:monitor(process, Pid),
                                    ex_banking_account_map:create_user(UserId, Pid, Ref)

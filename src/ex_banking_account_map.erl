@@ -58,8 +58,9 @@ handle_call({create_user,{UserId,Pid,Ref}},_From,State)->
     end;
 
 handle_call({delete_user,UserId},_From,State)->
+        Pid=(dict:find(UserId, State#state.accounts))#user.pid,
         NewDict=dict:erase(UserId,State#state.accounts),
-        {reply,ok,State#state{accounts=NewDict}}.
+        {reply,{ok,Pid},State#state{accounts=NewDict}}.
        
                      
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
